@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - KGEC Pages</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="./index.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="navbar-root"></div>
+  <div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Settings</h1>
+      <a href="../index.html" class="btn btn-secondary">Back</a>
+    </div>
+
+    <!-- USERS -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Users</h3>
+        <button id="btn-clear-users" class="btn btn-sm btn-outline-danger">
+          <i class="bi bi-trash"></i> Clear local storage
+        </button>
+      </div>
+
+      <div class="mb-3 d-flex align-items-center gap-2">
+        <button id="btn-add-user" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Add
+          User</button>
+        <button id="btn-delete-user" class="btn btn-danger">Delete Selected</button>
+        <button id="btn-import" class="btn btn-secondary">Import</button>
+        <button id="btn-export" class="btn btn-secondary">Export</button>
+        <input type="file" id="input-import-file" accept="application/json" hidden>
+
+        <div class="form-check ms-3">
+          <input class="form-check-input" type="checkbox" id="select-all-checkbox">
+          <label class="form-check-label" for="select-all-checkbox">Select All</label>
+        </div>
+      </div>
+
+      <div id="empty-state" class="alert alert-secondary d-none">
+        No users yet. Click "Add User" to create one.
+      </div>
+
+      <div id="user-list" class="row g-3"></div>
+    </section>
+
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Default Layout</h3>
+        <button id="btn-refresh-default-layout" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-clockwise"></i> Refresh from server
+        </button>
+      </div>
+      <div id="default-layout-info" class="text-muted"></div>
+    </section>
+
+    <!-- LAYOUTS -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Layouts</h3>
+      </div>
+
+      <div class="mb-3 d-flex align-items-center gap-2">
+        <button id="btn-delete-layout" class="btn btn-danger">Delete Selected</button>
+        <button id="btn-delete-all-layouts" class="btn btn-outline-danger">Delete All</button>
+
+        <div class="form-check ms-3">
+          <input class="form-check-input" type="checkbox" id="select-all-layouts-checkbox">
+          <label class="form-check-label" for="select-all-layouts-checkbox">Select All</label>
+        </div>
+      </div>
+
+      <div id="layout-list" class="row g-3"></div>
+    </section>
+
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Last Used Layout</h3>
+        <button id="btn-delete-last-used" class="btn btn-sm btn-outline-danger">
+          <i class="bi bi-trash"></i> Delete
+        </button>
+      </div>
+      <div id="last-used-layout-info" class="text-muted"></div>
+    </section>
+
+    <!-- SUBJECTS -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Subjects</h3>
+        <button id="btn-refresh-subjects" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-clockwise"></i> Refresh from server
+        </button>
+      </div>
+
+      <div id="subjects-count" class="text-muted mb-2"></div>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr>
+              <th>Subject Code</th>
+              <th>Subject Name</th>
+            </tr>
+          </thead>
+          <tbody id="subjects-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="add-user-form">
+            <div class="mb-2"><label class="form-label">Name</label><input type="text" class="form-control"
+                id="new-user-name" required></div>
+            <div class="mb-2"><label class="form-label">Roll</label><input type="text" class="form-control"
+                id="new-user-roll"></div>
+            <div class="mb-2"><label class="form-label">Reg</label><input type="text" class="form-control"
+                id="new-user-reg"></div>
+            <div class="mb-2"><label class="form-label">Dept</label><input type="text" class="form-control"
+                id="new-user-dept"></div>
+            <div class="mb-2"><label class="form-label">Course</label><input type="text" class="form-control"
+                id="new-user-course"></div>
+            <div class="mb-2"><label class="form-label">Year</label><input type="text" class="form-control"
+                id="new-user-year"></div>
+            <div class="mb-2"><label class="form-label">Sem</label><input type="text" class="form-control"
+                id="new-user-sem"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="btn-save-new-user" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="./index.js"></script>
+
+</html>

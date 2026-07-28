@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Front Page Generator - KGEC Pages</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <link href="./index.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- front-page-generator/index.html body -->
+  <div id="navbar-root"></div>
+
+  <div class="d-flex" style="height: calc(100vh - 70px);">
+
+    <div class="flex-fill d-flex justify-content-center align-items-start p-4"
+      style="overflow-y: auto; height: 100%; background: #f1f1f1;">
+      <div class="border shadow-sm bg-white" style="width: 210mm; flex-shrink: 0;">
+        <iframe id="preview-frame" scrolling="no" src="./front-page/front-page.html"
+          style="width: 210mm; height: 297mm; border: none; display: block;"></iframe>
+      </div>
+    </div>
+
+    <div class="border-end bg-white p-3" style="width: 30%; min-width: 320px; overflow-y: auto; height: 100%;">
+      <div class="d-flex flex-column gap-3">
+
+        <!-- Make for -->
+        <div class="card">
+          <div class="card-header">Make for</div>
+          <div class="card-body" style="max-height: 180px; overflow-y: auto;">
+            <div id="make-for-list" class="d-flex flex-column gap-1"></div>
+          </div>
+        </div>
+
+        <!-- Layout -->
+        <div class="card">
+          <div class="card-header">Layout</div>
+          <div class="card-body d-flex flex-column gap-2">
+            <select id="layout-select" class="form-select"></select>
+            <div class="d-flex gap-2">
+              <button id="btn-save-layout" class="btn btn-outline-secondary flex-fill">Save as new</button>
+              <button id="btn-overwrite-layout" class="btn btn-outline-secondary flex-fill">Overwrite</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page margin -->
+        <div class="card">
+          <div class="card-header">Page margin (mm)</div>
+          <div class="card-body d-flex flex-column gap-2">
+            <div>
+              <label class="form-label">Left</label>
+              <input type="number" id="margin-left" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Right</label>
+              <input type="number" id="margin-right" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Top</label>
+              <input type="number" id="margin-top" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Bottom</label>
+              <input type="number" id="margin-bottom" class="form-control">
+            </div>
+          </div>
+        </div>
+
+        <!-- Page border -->
+        <div class="card">
+          <div class="card-header">Page border (mm)</div>
+          <div class="card-body">
+            <input type="number" id="border-thickness" class="form-control" min="0" max="5" step="0.5">
+          </div>
+        </div>
+
+        <!-- College emblem -->
+        <div class="card">
+          <div class="card-header">College emblem</div>
+          <div class="card-body d-flex flex-column gap-2">
+            <div>
+              <label class="form-label">Size (mm)</label>
+              <input type="number" id="emblem-size" class="form-control">
+            </div>
+            <div class="d-flex flex-column gap-1">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="emblem-style" id="emblem-straight" value="straight">
+                <label class="form-check-label" for="emblem-straight">Straight</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="emblem-style" id="emblem-curved" value="curved">
+                <label class="form-check-label" for="emblem-curved">Curved</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title space -->
+        <div class="card">
+          <div class="card-header">Title space</div>
+          <div class="card-body">
+            <div id="title-lines" class="d-flex flex-column gap-3"></div>
+            <button id="btn-add-title-line" class="btn btn-sm btn-outline-primary mt-2 w-100">
+              <i class="bi bi-plus"></i> Add line
+            </button>
+          </div>
+        </div>
+
+        <!-- Details space -->
+        <div class="card">
+          <div class="card-header">Details space</div>
+          <div class="card-body d-flex flex-column gap-3">
+            <div>
+              <label class="form-label">Font size (shared)</label>
+              <input type="number" id="fs-details" class="form-control">
+            </div>
+            <div id="details-rows" class="d-flex flex-column gap-3"></div>
+            <button id="btn-add-detail-row" class="btn btn-sm btn-outline-primary w-100">
+              <i class="bi bi-plus"></i> Add field
+            </button>
+          </div>
+        </div>
+
+        <!-- Academic session -->
+        <div class="card">
+          <div class="card-header">Academic session</div>
+          <div class="card-body d-flex flex-column gap-2">
+            <div>
+              <label class="form-label">Font size</label>
+              <input type="number" id="fs-session" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Text</label>
+              <input type="text" id="session-text" class="form-control" placeholder="2025 - 2026">
+            </div>
+            <div class="d-flex flex-column gap-1">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="session-mode" id="session-show-text"
+                  value="showText">
+                <label class="form-check-label" for="session-show-text">Show text</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="session-mode" id="session-only-year"
+                  value="onlyYear">
+                <label class="form-check-label" for="session-only-year">Only year</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save -->
+        <div class="card">
+          <div class="card-body d-flex flex-column gap-2">
+            <button id="btn-save-pdf" class="btn btn-primary w-100">
+              <i class="bi bi-file-earmark-pdf"></i> Export PDF(s)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script type="module" src="./index.js"></script>
+
+</html>

@@ -1,36 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Front Page</title>
-  <link rel="stylesheet" href="page.css">
+  <link href="./front-page.css" rel="stylesheet">
 </head>
+
 <body>
+
   <div class="page-wrap">
     <div class="inner-frame">
 
-      <section id="group-header" class="page-group header-group">
-        <div class="header-group-inner">
-          <svg class="curve-text" viewBox="0 0 1432 710" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <path id="topArc" d="M 296,355 A 420,420 0 0,1 1136,355"/>
-            </defs>
-            <text class="curve-label" font-family="Poppins" font-weight="700" font-size="58" fill="#000">
-              <textPath href="#topArc" startOffset="50%" text-anchor="middle">
-                KALYANI GOVERNMENT ENGINEERING COLLEGE
-              </textPath>
-            </text>
-          </svg>
-          <img src="logo.svg" alt="KGEC Logo" class="logo">
-        </div>
-      </section>
+      <div class="page-group header-group-inner">
+        <img id="emblem-straight" class="emblem-img" src="../../data/emblem-straight.svg"
+          alt="College Emblem (straight)">
+        <img id="emblem-curved" class="emblem-img" src="../../data/emblem-curved.svg" alt="College Emblem (curved)">
+      </div>
 
-      <section id="group-title"   class="page-group title-group"></section>
-      <section id="group-details" class="page-group details-group"></section>
-      <section id="group-session" class="page-group session-group"></section>
+      <div class="page-group title-group" id="group-title"></div>
+
+      <div class="page-group details-group" id="group-details"></div>
+
+      <div class="page-group session-group" id="group-session"></div>
 
     </div>
   </div>
-  <script src="page.js"></script>
+
+  <script type="module" src="./front-page.js"></script>
 </body>
+
 </html>

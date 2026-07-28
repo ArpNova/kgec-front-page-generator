@@ -1,0 +1,55 @@
+{
+  "label": "Default",
+  "locked": true,
+
+  "pageMargin": {
+    "left": 20,
+    "right": 10,
+    "top": 10,
+    "bottom": 10
+  },
+
+  "pageBorder": {
+    "thickness": 2
+  },
+
+  "collegeEmblem": {
+    "size": 80,
+    "textStyle": "curved"
+  },
+
+  "titleSpace": [
+    {
+      "text": "Submission for Assignment",
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "fontSize": 7
+    },
+    {
+      "text": "Basic programs to understand coding",
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "fontSize": 7
+    }
+  ],
+
+  "detailsSpace": {
+    "fontSize": 7,
+    "rows": [
+      { "label": "Name", "linkedField": "name", "value": "" },
+      { "label": "Dept.", "linkedField": "dept", "value": "" },
+      { "label": "Roll No.", "linkedField": "roll", "value": "" },
+      { "label": "Reg. No.", "linkedField": "reg", "value": "" },
+      { "label": "Subject Code", "linkedField": null, "value": "" },
+      { "label": "Subject", "linkedField": null, "value": "" }
+    ]
+  },
+
+  "academicSession": {
+    "fontSize": 7,
+    "mode": "showText",
+    "text": ""
+  }
+}
