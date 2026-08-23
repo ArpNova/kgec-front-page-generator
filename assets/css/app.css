@@ -229,6 +229,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Subjects dropdown list */
 
+.subjects-menu {
+  width: 320px;
+  max-width: 90vw;
+}
+
+.subjects-list {
+  height: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 .subject-row {
   border-radius: var(--bs-border-radius-sm);
   overflow: hidden;
