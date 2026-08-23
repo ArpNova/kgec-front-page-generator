@@ -109,7 +109,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Navbar */
 
-.navbar {
+.navbar.sticky-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1030;
   box-shadow: var(--kg-shadow-sm);
 }
 
@@ -240,6 +243,22 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
 }
 
+@media (max-width: 575.98px) {
+  .subjects-menu {
+    position: fixed;
+    top: 3.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+
+  .subjects-list {
+    height: auto;
+    max-height: calc(100vh - 10rem);
+  }
+}
+
 .subject-row {
   border-radius: var(--bs-border-radius-sm);
   overflow: hidden;
@@ -259,6 +278,16 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--bs-font-monospace);
   color: var(--bs-primary);
   font-weight: 600;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.subject-row .btn-subject-name {
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 /* Tables */
