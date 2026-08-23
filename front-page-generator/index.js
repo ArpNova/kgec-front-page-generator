@@ -1,5 +1,5 @@
 import { getItem, setItem, KEYS } from "../lib/storage.js";
-import { loadUsers } from "../settings/index.js";
+import { loadUsers } from "../lib/users.js";
 import { showToast, promptForText } from "../lib/ui.js";
 import { renderNavbar } from "../lib/navbar.js";
 import { generateFrontPagePdf } from "../lib/pdf-generate.js";
@@ -51,7 +51,7 @@ function renderMakeForList() {
   container.innerHTML = "";
 
   if (users.length === 0) {
-    container.innerHTML = `<p class="text-muted mb-0">No users in Settings yet.</p>`;
+    container.innerHTML = `<p class="text-muted mb-0">No users yet — add one in <a href="../settings/index.html">Settings</a>.</p>`;
     return;
   }
 
@@ -127,7 +127,9 @@ function renderLayoutSelect(savedLayouts, defaultLayout) {
 function syncOverwriteButtonState() {
   const selectedKey = document.getElementById("layout-select").value;
   const btn = document.getElementById("btn-overwrite-layout");
-  btn.disabled = selectedKey === "__default__" || selectedKey === "__last_used__" || isLockedLayout(currentLayout);
+  const locked = isLockedLayout(currentLayout);
+  btn.disabled = selectedKey === "__default__" || selectedKey === "__last_used__" || locked;
+  document.getElementById("layout-lock-badge").classList.toggle("d-none", !locked);
 }
 
 function syncControlsFromLayout() {
@@ -426,7 +428,7 @@ async function exportCurrentAsPdf() {
   showToast(`Generated ${idsToExport.length} PDF(s).`, "success");
 }
 
-function buildExportFilename(user, index) {
+export function buildExportFilename(user, index) {
   const namePart = (user?.name || "unnamed").trim().replace(/\s+/g, "_");
   const rollPart = user?.roll || "no-roll";
   const timestamp = Date.now();
@@ -438,7 +440,7 @@ function sleep(ms) {
 }
 
 async function init() {
-  renderNavbar("../");
+  renderNavbar("../", "generator");
 
   let defaultLayout;
   try {

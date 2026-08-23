@@ -1,0 +1,10 @@
+{
+  "name": "kgec-pages",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static site for generating KGEC assignment front pages.",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}

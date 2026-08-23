@@ -1,54 +1,25 @@
 import { getItem, setItem, removeItem, KEYS } from "../lib/storage.js";
 import { renderNavbar } from "../lib/navbar.js";
-import { showToast, confirmAction } from "../lib/ui.js";
+import { showToast, confirmAndRun, bindSelectAll } from "../lib/ui.js";
 import { getDefaultLayout, getStoredDefaultLayout } from "../lib/default-layout.js";
 import { refreshSubjects } from "../lib/subjects.js";
-renderNavbar("../");
+import { loadUsers, saveUsers, generateUserId, USER_FIELDS } from "../lib/users.js";
+renderNavbar("../", "settings");
 
 // ---------- USERS ----------
-
-function loadUsers() {
-  const data = getItem(KEYS.USERS);
-  return Array.isArray(data) ? data : [];
-}
-
-function saveUsers(users) {
-  if (!Array.isArray(users)) {
-    console.error("saveUsers: expected an array, got:", users);
-    return;
-  }
-  setItem(KEYS.USERS, users);
-}
-
-function generateId() {
-  return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
-}
-
-function createUser() {
-  return { id: generateId(), name: "", roll: "", reg: "", dept: "", course: "", year: "", sem: "" };
-}
-
-const USER_FIELDS = [
-  { key: "name", label: "Name" },
-  { key: "roll", label: "Roll" },
-  { key: "reg", label: "Reg" },
-  { key: "dept", label: "Dept" },
-  { key: "course", label: "Course" },
-  { key: "year", label: "Year" },
-  { key: "sem", label: "Sem" },
-];
 
 function renderUsers() {
   const users = loadUsers();
   const container = document.getElementById("user-list");
   const emptyState = document.getElementById("empty-state");
 
+  document.getElementById("users-count-badge").textContent = users.length;
   container.innerHTML = "";
   emptyState.classList.toggle("d-none", users.length !== 0);
 
   users.forEach((user) => {
     const col = document.createElement("div");
-    col.className = "col-md-4";
+    col.className = "col-sm-6 col-lg-4";
 
     const fieldsHtml = USER_FIELDS.map(
       (f) => `
@@ -97,7 +68,7 @@ function updateUserField(id, key, value) {
 
 async function addUserFromModal() {
   const newUser = {
-    id: generateId(),
+    id: generateUserId(),
     name: document.getElementById("new-user-name").value.trim(),
     roll: document.getElementById("new-user-roll").value.trim(),
     reg: document.getElementById("new-user-reg").value.trim(),
@@ -126,23 +97,16 @@ async function addUserFromModal() {
 
 async function deleteUsersByIds(ids) {
   if (ids.length === 0) return;
-  const confirmed = await confirmAction(`Delete ${ids.length} user(s)? This cannot be undone.`);
-  if (!confirmed) return;
-
-  const users = loadUsers();
-  const remaining = users.filter((u) => !ids.includes(u.id));
-  saveUsers(remaining);
-  renderUsers();
-  showToast(`Deleted ${ids.length} user(s).`, "success");
+  const done = await confirmAndRun(`Delete ${ids.length} user(s)? This cannot be undone.`, () => {
+    saveUsers(loadUsers().filter((u) => !ids.includes(u.id)));
+    renderUsers();
+  });
+  if (done) showToast(`Deleted ${ids.length} user(s).`, "success");
 }
 
 function deleteSelectedUsers() {
   const checkedIds = [...document.querySelectorAll(".user-checkbox:checked")].map((cb) => cb.dataset.id);
   deleteUsersByIds(checkedIds);
-}
-
-function toggleSelectAll(checked) {
-  document.querySelectorAll(".user-checkbox").forEach((cb) => (cb.checked = checked));
 }
 
 function exportUsers() {
@@ -177,11 +141,11 @@ function importUsers(file) {
 }
 
 async function clearUsers() {
-  const confirmed = await confirmAction("Clear all locally saved users? This cannot be undone.");
-  if (!confirmed) return;
-  removeItem(KEYS.USERS);
-  renderUsers();
-  showToast("Users storage cleared.", "success");
+  const done = await confirmAndRun("Clear all locally saved users? This cannot be undone.", () => {
+    removeItem(KEYS.USERS);
+    renderUsers();
+  });
+  if (done) showToast("Users storage cleared.", "success");
 }
 
 // ---------- DEFAULT LAYOUT ----------
@@ -189,7 +153,11 @@ async function clearUsers() {
 function renderDefaultLayoutInfo() {
   const layout = getStoredDefaultLayout();
   const el = document.getElementById("default-layout-info");
+  const badge = document.getElementById("default-layout-badge");
+
   el.textContent = layout ? `Loaded: ${layout.label || "Default"} (locked, read-only)` : "Not loaded yet.";
+  badge.textContent = layout ? "Loaded" : "Not loaded";
+  badge.className = `badge ms-1 ${layout ? "text-bg-primary" : "text-bg-secondary"}`;
 }
 
 async function refreshDefaultLayout() {
@@ -200,22 +168,30 @@ async function refreshDefaultLayout() {
 
 // ---------- SAVED LAYOUTS ----------
 
-// settings/index.js — Layouts section replacement
-
 function renderLayouts() {
   const layouts = getItem(KEYS.LAYOUTS) || {};
   const container = document.getElementById("layout-list");
   container.innerHTML = "";
 
   const entries = Object.entries(layouts);
+  document.getElementById("layouts-count-badge").textContent = entries.length;
+
   if (entries.length === 0) {
-    container.innerHTML = `<p class="text-muted">No saved layouts.</p>`;
+    container.innerHTML = `
+      <div class="col-12">
+        <div class="empty-state">
+          <i class="bi bi-collection empty-state-icon"></i>
+          <h5>No saved layouts</h5>
+          <p class="mb-0">Save a layout from the Front Page Generator to see it here.</p>
+        </div>
+      </div>
+    `;
     return;
   }
 
   entries.forEach(([key, layout]) => {
     const col = document.createElement("div");
-    col.className = "col-md-4";
+    col.className = "col-sm-6 col-lg-4";
     col.innerHTML = `
       <div class="card">
         <div class="card-body">
@@ -241,14 +217,13 @@ function renderLayouts() {
 
 async function deleteLayoutsByKeys(keys) {
   if (keys.length === 0) return;
-  const confirmed = await confirmAction(`Delete ${keys.length} layout(s)? This cannot be undone.`);
-  if (!confirmed) return;
-
-  const layouts = getItem(KEYS.LAYOUTS) || {};
-  keys.forEach((k) => delete layouts[k]);
-  setItem(KEYS.LAYOUTS, layouts);
-  renderLayouts();
-  showToast(`Deleted ${keys.length} layout(s).`, "success");
+  const done = await confirmAndRun(`Delete ${keys.length} layout(s)? This cannot be undone.`, () => {
+    const layouts = getItem(KEYS.LAYOUTS) || {};
+    keys.forEach((k) => delete layouts[k]);
+    setItem(KEYS.LAYOUTS, layouts);
+    renderLayouts();
+  });
+  if (done) showToast(`Deleted ${keys.length} layout(s).`, "success");
 }
 
 function deleteSelectedLayouts() {
@@ -261,24 +236,24 @@ async function deleteAllLayouts() {
   deleteLayoutsByKeys(Object.keys(layouts));
 }
 
-function toggleSelectAllLayouts(checked) {
-  document.querySelectorAll(".layout-checkbox").forEach((cb) => (cb.checked = checked));
-}
-
 // ---------- LAST USED LAYOUT ----------
 
 function renderLastUsedInfo() {
   const lastUsed = getItem(KEYS.LAST_USED_LAYOUT);
   const el = document.getElementById("last-used-layout-info");
+  const badge = document.getElementById("last-used-layout-badge");
+
   el.textContent = lastUsed ? "A last-used layout state is saved." : "No last-used layout saved yet.";
+  badge.textContent = lastUsed ? "Saved" : "Empty";
+  badge.className = `badge ms-1 ${lastUsed ? "text-bg-primary" : "text-bg-secondary"}`;
 }
 
 async function deleteLastUsedLayout() {
-  const confirmed = await confirmAction("Delete the last-used layout state? This cannot be undone.");
-  if (!confirmed) return;
-  removeItem(KEYS.LAST_USED_LAYOUT);
-  renderLastUsedInfo();
-  showToast("Last-used layout deleted.", "success");
+  const done = await confirmAndRun("Delete the last-used layout state? This cannot be undone.", () => {
+    removeItem(KEYS.LAST_USED_LAYOUT);
+    renderLastUsedInfo();
+  });
+  if (done) showToast("Last-used layout deleted.", "success");
 }
 
 // ---------- SUBJECTS ----------
@@ -286,11 +261,10 @@ async function deleteLastUsedLayout() {
 function renderSubjects() {
   const subjects = getItem(KEYS.SUBJECTS) || {};
   const tbody = document.getElementById("subjects-table-body");
-  const countEl = document.getElementById("subjects-count");
   tbody.innerHTML = "";
 
   const entries = Object.entries(subjects);
-  countEl.textContent = `${entries.length} subject(s) loaded.`;
+  document.getElementById("subjects-count-badge").textContent = entries.length;
 
   if (entries.length === 0) {
     tbody.innerHTML = `<tr><td colspan="2" class="text-muted">No subjects loaded.</td></tr>`;
@@ -333,16 +307,13 @@ function init() {
     e.target.value = "";
   });
 
-  document.getElementById("select-all-checkbox").addEventListener("change", (e) => {
-    toggleSelectAll(e.target.checked);
-  });
+  bindSelectAll("select-all-checkbox", ".user-checkbox");
 
+  document.getElementById("btn-refresh-default-layout").addEventListener("click", refreshDefaultLayout);
   document.getElementById("btn-clear-users").addEventListener("click", clearUsers);
   document.getElementById("btn-delete-layout").addEventListener("click", deleteSelectedLayouts);
   document.getElementById("btn-delete-all-layouts").addEventListener("click", deleteAllLayouts);
-  document.getElementById("select-all-layouts-checkbox").addEventListener("change", (e) => {
-    toggleSelectAllLayouts(e.target.checked);
-  });
+  bindSelectAll("select-all-layouts-checkbox", ".layout-checkbox");
   document.getElementById("btn-delete-last-used").addEventListener("click", deleteLastUsedLayout);
   document.getElementById("btn-refresh-subjects").addEventListener("click", refreshSubjectsList);
 }
@@ -350,5 +321,3 @@ function init() {
 if (document.getElementById("user-list")) {
   init();
 }
-
-export { loadUsers, saveUsers, createUser };
