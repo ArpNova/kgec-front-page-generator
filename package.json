@@ -2,6 +2,7 @@
   "name": "kgec-pages",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Static site for generating KGEC assignment front pages.",
   "scripts": {
