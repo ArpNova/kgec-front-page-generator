@@ -37,7 +37,9 @@
   --kg-shadow-md: 0 10px 26px rgba(10, 55, 60, 0.16);
 
   --kg-topbar-h: 3.5rem;
-  --kg-bottombar-h: 6.5rem;
+  --kg-bottombar-h: 5.5rem;
+
+  color-scheme: light;
 }
 
 body {
@@ -137,6 +139,50 @@ h1 {
   font-size: clamp(0.95rem, 0.8rem + 0.5vw, 1.15rem);
 }
 
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.topbar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--kg-border);
+  border-radius: var(--bs-border-radius-sm);
+  background: var(--kg-hover);
+  color: var(--kg-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+a.topbar-chip:hover,
+a.topbar-chip:focus {
+  background: var(--bs-primary);
+  color: #fff;
+}
+
+.topbar-chip-primary {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+@media (max-width: 420px) {
+  .topbar-chip-label {
+    display: none;
+  }
+}
+
 .navbar-brand .brand-badge {
   display: inline-flex;
   align-items: center;
@@ -155,24 +201,28 @@ h1 {
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: 1rem;
+  bottom: 0.75rem;
   transform: translateX(-50%);
   z-index: 1030;
   width: calc(100% - 1.5rem);
-  max-width: 420px;
+  max-width: 400px;
 }
 
 .bottom-nav-inner {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 0.15rem;
-  height: 3.75rem;
-  padding: 0 0.5rem 0.5rem;
+  height: 3.25rem;
   background: var(--kg-surface);
   border: 1px solid var(--kg-border);
   border-radius: 999px;
   box-shadow: var(--kg-shadow-md);
+  overflow: hidden;
+}
+
+.bottom-nav-fab-spacer {
+  flex: 0 0 3.1rem;
 }
 
 .bottom-nav-link {
@@ -185,7 +235,7 @@ h1 {
   min-width: 0;
   height: 100%;
   padding: 0.25rem 0.1rem;
-  border-radius: var(--bs-border-radius);
+  border-radius: 0;
   color: var(--kg-muted);
   text-decoration: none;
   font-size: 0.68rem;
@@ -209,18 +259,22 @@ h1 {
 }
 
 .bottom-nav-fab {
+  position: absolute;
+  left: 50%;
+  top: -0.925rem;
+  transform: translateX(-50%);
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 3.5rem;
-  height: 3.5rem;
-  margin-top: -1.5rem;
+  width: 3.1rem;
+  height: 3.1rem;
   border: 3px solid var(--bs-body-bg);
   border-radius: 50%;
   background: var(--bs-primary);
   color: #fff;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   box-shadow: var(--kg-shadow-md);
   transition: transform 0.15s ease;
 }
@@ -228,13 +282,16 @@ h1 {
 .bottom-nav-fab:hover,
 .bottom-nav-fab:focus {
   color: #fff;
-  transform: translateY(-2px);
+  transform: translateX(-50%) translateY(-2px);
 }
 
 @media (max-width: 360px) {
   .bottom-nav-inner {
-    height: 3.25rem;
-    padding: 0 0.35rem 0.35rem;
+    height: 3rem;
+  }
+
+  .bottom-nav-fab-spacer {
+    flex: 0 0 2.85rem;
   }
 
   .bottom-nav-link {
@@ -246,10 +303,10 @@ h1 {
   }
 
   .bottom-nav-fab {
-    width: 3.1rem;
-    height: 3.1rem;
-    margin-top: -1.25rem;
-    font-size: 1.25rem;
+    width: 2.85rem;
+    height: 2.85rem;
+    top: -0.775rem;
+    font-size: 1.15rem;
   }
 }
 
@@ -356,21 +413,20 @@ h1 {
 }
 
 .subject-row {
-  border-radius: var(--bs-border-radius-sm);
-  overflow: hidden;
   gap: 0.5rem;
 }
 
 .subject-row .btn {
   border: none;
-  background: transparent;
+  background-color: transparent;
   border-radius: var(--bs-border-radius-sm);
   padding: 0.5rem 0.65rem;
   text-align: left;
+  opacity: 1;
 }
 
 .subject-row .btn:hover {
-  background: var(--kg-hover);
+  background-color: var(--kg-hover);
 }
 
 .subject-row .btn-subject-code {
@@ -383,6 +439,7 @@ h1 {
 }
 
 .subject-row .btn-subject-name {
+  color: var(--bs-body-color);
   white-space: normal;
   overflow-wrap: break-word;
   min-width: 0;
@@ -590,14 +647,22 @@ h1 {
 }
 
 @media (min-width: 992px) {
+  /* The floating bottom nav overlays content on this page rather than the
+     layout reserving space for it — that reservation left a visible seam
+     where the preview pane's tinted background fell short of the body's. */
+  body.page-generator {
+    padding-bottom: 0;
+  }
+
   .generator-layout {
     flex-direction: row;
-    height: calc(100vh - var(--kg-topbar-h) - var(--kg-bottombar-h));
+    height: calc(100vh - var(--kg-topbar-h));
   }
 
   .generator-preview {
     height: 100%;
     overflow-y: auto;
+    padding-bottom: var(--kg-bottombar-h);
   }
 
   .generator-sidebar {
@@ -606,6 +671,7 @@ h1 {
     max-width: 420px;
     height: 100%;
     overflow-y: auto;
+    padding-bottom: var(--kg-bottombar-h);
     border-top: none;
     border-left: 1px solid var(--kg-border);
   }

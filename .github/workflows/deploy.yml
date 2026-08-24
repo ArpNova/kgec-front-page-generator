@@ -43,6 +43,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Generate version metadata
+        run: |
+          BUILD_NUM="${{ github.run_number }}"
+          COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:6}"
+          UPDATE_DATE="$(date -u +'%d %b %Y')"
+          ISO_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          VERSION="v2.0.${BUILD_NUM}"
+
+          mkdir -p assets/config
+          cat <<EOF > assets/config/version.json
+          {
+            "repoUrl": "${{ github.server_url }}/${{ github.repository }}",
+            "version": "${VERSION}",
+            "buildNumber": ${BUILD_NUM},
+            "commitHash": "${SHORT_SHA}",
+            "updatedDate": "${UPDATE_DATE}",
+            "isoDate": "${ISO_DATE}"
+          }
+          EOF
+
+          echo "Generated version metadata: ${VERSION} (${SHORT_SHA})"
+
       - name: Stage site (exclude dev-only files)
         run: |
           mkdir -p _site
