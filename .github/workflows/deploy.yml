@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -42,6 +42,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate version metadata
         run: |
@@ -65,6 +67,28 @@ jobs:
           EOF
 
           echo "Generated version metadata: ${VERSION} (${SHORT_SHA})"
+
+          {
+            echo "VERSION=${VERSION}"
+            echo "SHORT_SHA=${SHORT_SHA}"
+            echo "UPDATE_DATE=${UPDATE_DATE}"
+            echo "BUILD_NUM=${BUILD_NUM}"
+          } >> "$GITHUB_ENV"
+
+      - name: Create Git tag and release
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "${VERSION}" -m "Release ${VERSION} - Deployment #${BUILD_NUM}"
+          git push origin "${VERSION}"
+
+          gh release create "${VERSION}" \
+            --title "Release ${VERSION} (${UPDATE_DATE})" \
+            --notes "Automated deployment (Build #${BUILD_NUM}, Commit ${SHORT_SHA})"
 
       - name: Stage site (exclude dev-only files)
         run: |
