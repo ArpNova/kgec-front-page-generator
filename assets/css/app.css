@@ -12,10 +12,10 @@
   --bs-link-hover-color-rgb: 3, 92, 67;
   --bs-focus-ring-color: rgba(4, 120, 87, 0.3);
 
-  --bs-border-radius-sm: 0.5rem;
-  --bs-border-radius: 0.65rem;
-  --bs-border-radius-lg: 0.85rem;
-  --bs-border-radius-xl: 1rem;
+  --bs-border-radius-sm: 8px;
+  --bs-border-radius: 10px;
+  --bs-border-radius-lg: 14px;
+  --bs-border-radius-xl: 18px;
 
   --bs-body-bg: #eef6f5;
   --bs-body-bg-rgb: 238, 246, 245;
@@ -358,12 +358,15 @@ h1 {
 .subject-row {
   border-radius: var(--bs-border-radius-sm);
   overflow: hidden;
+  gap: 0.5rem;
 }
 
 .subject-row .btn {
   border: none;
   background: transparent;
-  border-radius: 0;
+  border-radius: var(--bs-border-radius-sm);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
 }
 
 .subject-row .btn:hover {
@@ -383,7 +386,7 @@ h1 {
   white-space: normal;
   overflow-wrap: break-word;
   min-width: 0;
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
 /* Tables */
