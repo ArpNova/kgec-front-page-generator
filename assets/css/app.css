@@ -212,19 +212,18 @@ a.topbar-chip:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.15rem;
-  height: 3.25rem;
+  gap: 0.05rem;
+  height: 3.5rem;
+  padding: 0 0.4rem;
   background: var(--kg-surface);
   border: 1px solid var(--kg-border);
   border-radius: 999px;
   box-shadow: var(--kg-shadow-md);
-  overflow: hidden;
 }
 
-.bottom-nav-fab-spacer {
-  flex: 0 0 3.1rem;
-}
-
+/* Every primary destination (page links and the subjects-search trigger)
+   shares this look, so the nav reads as one consistent set of items.
+   Rounded fully (999px) to match the pill-shaped container it nests in. */
 .bottom-nav-link {
   display: flex;
   flex-direction: column;
@@ -233,80 +232,54 @@ a.topbar-chip:focus {
   gap: 0.1rem;
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
-  padding: 0.25rem 0.1rem;
-  border-radius: 0;
+  margin: 0.3rem 0;
+  padding: 0.3rem 0.15rem;
+  border: none;
+  border-radius: 999px;
+  background: none;
   color: var(--kg-muted);
   text-decoration: none;
-  font-size: 0.68rem;
+  font: inherit;
+  font-size: 0.64rem;
   font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .bottom-nav-link i {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   line-height: 1;
 }
 
 .bottom-nav-link span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bottom-nav-link:hover,
+.bottom-nav-link:focus-visible,
 .bottom-nav-link.active {
   color: var(--bs-primary);
   background: var(--kg-hover);
 }
 
-.bottom-nav-fab {
-  position: absolute;
-  left: 50%;
-  top: -0.925rem;
-  transform: translateX(-50%);
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 3.1rem;
-  height: 3.1rem;
-  border: 3px solid var(--bs-body-bg);
-  border-radius: 50%;
-  background: var(--bs-primary);
-  color: #fff;
-  font-size: 1.3rem;
-  box-shadow: var(--kg-shadow-md);
-  transition: transform 0.15s ease;
-}
-
-.bottom-nav-fab:hover,
-.bottom-nav-fab:focus {
-  color: #fff;
-  transform: translateX(-50%) translateY(-2px);
-}
-
-@media (max-width: 360px) {
+@media (max-width: 400px) {
   .bottom-nav-inner {
-    height: 3rem;
-  }
-
-  .bottom-nav-fab-spacer {
-    flex: 0 0 2.85rem;
+    height: 3.1rem;
+    padding: 0 0.25rem;
   }
 
   .bottom-nav-link {
-    font-size: 0.6rem;
+    font-size: 0.56rem;
   }
 
   .bottom-nav-link i {
-    font-size: 1.05rem;
-  }
-
-  .bottom-nav-fab {
-    width: 2.85rem;
-    height: 2.85rem;
-    top: -0.775rem;
-    font-size: 1.15rem;
+    font-size: 1rem;
   }
 }
 
