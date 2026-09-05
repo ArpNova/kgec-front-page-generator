@@ -618,7 +618,7 @@ a.topbar-chip:focus {
 
 .template-thumb-link {
   display: block;
-  aspect-ratio: 210 / 297;
+  height: 170px;
   background: #eef1f0;
   border-bottom: 1px solid var(--kg-border);
   overflow: hidden;
