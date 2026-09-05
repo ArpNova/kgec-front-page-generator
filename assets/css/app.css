@@ -690,6 +690,131 @@ a.topbar-chip:focus {
   overflow-wrap: anywhere;
 }
 
+/* ---------------- MultiMerge ---------------- */
+
+.merge-group-label-input {
+  border-color: transparent;
+  background: transparent;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.merge-group-label-input:hover {
+  border-color: var(--kg-border);
+}
+
+.merge-group-label-input:focus {
+  border-color: var(--bs-primary);
+  background: var(--kg-surface);
+  box-shadow: 0 0 0 0.2rem var(--bs-focus-ring-color);
+}
+
+.merge-file-tile,
+.merge-file-add-tile {
+  width: 104px;
+  height: 150px;
+  border: 1px solid var(--kg-border);
+  border-radius: var(--bs-border-radius);
+  background: var(--kg-surface);
+  flex-shrink: 0;
+}
+
+.merge-file-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.merge-file-thumb {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef1f0;
+  border-bottom: 1px solid var(--kg-border);
+  overflow: hidden;
+}
+
+.merge-file-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.merge-file-thumb-fallback {
+  font-size: 1.75rem;
+  color: var(--kg-muted);
+}
+
+.merge-file-name {
+  flex-shrink: 0;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merge-file-remove {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--kg-surface);
+  color: #b91c1c;
+  line-height: 1;
+  box-shadow: var(--kg-shadow-sm);
+}
+
+.merge-file-remove:hover {
+  color: #7f1d1d;
+}
+
+.merge-file-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  border-top: 1px solid var(--kg-border);
+  background: var(--kg-hover);
+  color: var(--kg-muted);
+  cursor: grab;
+}
+
+.merge-file-tile.sortable-ghost {
+  opacity: 0.4;
+}
+
+.merge-file-add-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-primary);
+  font-size: 1.25rem;
+  border-style: dashed;
+  background: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.merge-file-add-tile:hover {
+  background: var(--kg-hover);
+  border-color: #7fbcac;
+}
+
 /* ---------------- Front page generator ---------------- */
 
 .generator-layout {

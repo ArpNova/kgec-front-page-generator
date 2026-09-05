@@ -12,7 +12,7 @@ This is a student-made project and is **not** an official college resource.
 | Generate Front Page | `front-page-generator/` | Design a front-page layout, link it to saved student details, preview it live, and export polished PDFs for one or many students at once. |
 | Settings | `settings/` | Manage saved students, saved/default layouts, and the subjects list — import/export students as JSON, refresh the default layout and subjects from the server, and clear locally stored data. |
 | Readymade Pages | `readymade/` | Browse and download pre-made front page templates without building one from scratch. *(Coming soon.)* |
-| MultiMerge | `multimerge/` | Merge multiple generated pages into a single combined document. *(Coming soon.)* |
+| MultiMerge | `multimerge/` | Group PDFs, reorder pages by dragging, and export each group as one merged PDF with a custom or default file name. |
 | Topsheet | `topsheet/` | Generate mark-tabulation top sheets for internal examinations, for teachers. *(Coming soon.)* |
 | Contributors | `contributors/` | Lists everyone who has contributed code, pulled live from the GitHub API. |
 
@@ -23,7 +23,7 @@ index.html, index.js          Landing page
 front-page-generator/         Layout editor + PDF export
 settings/                     Local data management (students, layouts, subjects)
 readymade/                    Readymade templates (placeholder)
-multimerge/                   PDF merging tool (placeholder)
+multimerge/                   PDF merging tool
 topsheet/                     Mark-tabulation top sheets for teachers (placeholder)
 contributors/                 GitHub contributors list, fetched live from the GitHub API
 lib/                          Shared browser modules (storage, users, subjects, layouts, PDF export, navbar, UI helpers)
