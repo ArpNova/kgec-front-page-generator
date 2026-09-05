@@ -1,6 +1,6 @@
 # Contributing to KGEC Pages
 
-Thanks for your interest in improving KGEC Pages! This is a small, student-maintained project, so the process is intentionally lightweight.
+Thanks for your interest in improving KGEC Pages! This is a small, student-maintained project, so the process is intentionally lightweight — this guide walks through it step by step, so it's fine if this is your first time opening a pull request anywhere.
 
 ## Before you start
 
@@ -14,17 +14,86 @@ The site is plain HTML/CSS/JS with no build step or framework. See the "Project 
 
 ## Making a change
 
-1. Fork the repository and create a branch off `main` for your change.
+1. Fork the repository and create a branch off `main` for your change (see [Branch naming](#branch-naming) below).
 2. Open `index.html` (or the relevant page) directly in a browser, or serve the repo root with any static file server, to try your change.
 3. Keep pure logic (parsing, formatting, storage access, etc.) in `lib/` functions that don't touch the DOM, so it stays easy to unit test.
-4. Add or update tests in `tests/` for any logic you add or change (see below).
+4. Add or update tests in `tests/` for any logic you add or change (see [Tests](#tests) below).
 5. Run the test suite and make sure it passes:
 
    ```bash
    npm test
    ```
 
-6. Commit your changes with a clear, descriptive message and open a pull request against `main`.
+6. Commit your changes following the [commit message conventions](#commit-messages) below.
+7. Push your branch and open a pull request against `main`, following the [pull request conventions](#pull-requests) below.
+
+## Branch naming
+
+Name your branch `<type>/<short-description>`, using lowercase words separated by hyphens for the description. The `type` should match the kind of change you're making:
+
+| Type | Use it for |
+| --- | --- |
+| `feat` | A new feature or page |
+| `fix` | A bug fix |
+| `docs` | Documentation-only changes (README, CONTRIBUTING, comments) |
+| `chore` | Tooling, CI, config, or maintenance work that isn't a feature or fix |
+| `refactor` | Restructuring code with no behavior change |
+| `test` | Adding or fixing tests only |
+
+Examples:
+
+```text
+feat/readymade-templates
+fix/pdf-export-filename
+docs/update-readme
+chore/add-ci-workflow
+```
+
+## Commit messages
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/): `<type>: <short summary>`, using the same `type` values as branch names above, written in the imperative mood (e.g. "add", not "added" or "adds").
+
+```text
+feat: add readymade template browser
+fix: correct roll number field in PDF export
+docs: describe the settings page in the README
+```
+
+- Keep the summary line short (under ~70 characters) and specific about *what* changed.
+- If the change needs more explanation, add a blank line after the summary and explain *why* the change was made — the diff already shows *what* changed, so use the body for context that isn't obvious from the code (a bug's root cause, a trade-off, a decision).
+- Keep each commit focused on one logical change; it's fine (and encouraged) to make several small commits rather than one large one.
+
+## Pull requests
+
+**Title:** Use the same format as commit messages — `<type>: <short summary>` — describing the overall change the PR introduces. If your PR only has one commit, the title can simply match that commit's message.
+
+**Description:** Fill in these sections (delete any that genuinely don't apply):
+
+```markdown
+## Summary
+One or two sentences on what this PR does.
+
+## Motivation
+Why this change is needed — the problem, bug, or use case behind it.
+(Skip this for small/obvious changes like typo fixes.)
+
+## Changes
+A short list of what was added, changed, or removed, and where.
+
+## Test plan
+How you verified the change works — commands you ran, pages you
+tested in a browser, screenshots for UI changes, etc.
+```
+
+A clear description helps reviewers (and future contributors reading the history) understand *why* a change was made, not just what it touched — that's the main thing a good PR description gives you that the diff alone doesn't.
+
+**Before opening the PR:**
+
+- Make sure `npm test` passes locally.
+- Keep the PR focused on one change — unrelated fixes should be their own PR.
+- Link any related issue in the description (e.g. `Closes #12`).
+
+Every pull request and push to `main` also runs `npm test` plus a JSON validation check via the `CI` workflow (`.github/workflows/ci.yml`). A red CI check will block merges, so please make sure both pass locally before opening a PR.
 
 ## Tests
 
@@ -32,8 +101,6 @@ Unit tests live in `tests/` and use Node's built-in test runner (no dependencies
 
 - Run all tests: `npm test`
 - Run a single file: `node --test tests/storage.test.js`
-
-Every pull request and push to `main` runs `npm test` plus a JSON validation check via the `CI` workflow (`.github/workflows/ci.yml`). Please make sure both pass locally before opening a PR — a red CI check will block merges.
 
 ## Style
 
