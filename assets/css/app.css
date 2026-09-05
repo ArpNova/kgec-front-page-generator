@@ -570,6 +570,11 @@ a.topbar-chip:focus {
   color: #92620a;
 }
 
+.feature-icon.icon-purple {
+  background: #f3e3fb;
+  color: #7c3aed;
+}
+
 .feature-card h5 {
   font-weight: 700;
   margin-bottom: 0.4rem;
@@ -644,6 +649,45 @@ a.topbar-chip:focus {
 .template-thumb-title {
   font-weight: 600;
   font-size: 0.92rem;
+}
+
+/* Contributors */
+
+.contributor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1.25rem 0.75rem;
+  background: var(--kg-surface);
+  border: 1px solid var(--kg-border);
+  border-radius: var(--bs-border-radius-lg);
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.contributor-card:hover {
+  box-shadow: var(--kg-shadow-md);
+  transform: translateY(-2px);
+  border-color: #7fbcac;
+  color: inherit;
+}
+
+.contributor-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--kg-border);
+  object-fit: cover;
+}
+
+.contributor-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
 }
 
 /* ---------------- Front page generator ---------------- */
