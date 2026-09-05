@@ -513,7 +513,15 @@ a.topbar-chip:focus {
     width: 2.25rem;
     height: 2.25rem;
     font-size: 1.05rem;
+  }
+
+  .feature-card-top {
     margin-bottom: 0.75rem;
+  }
+
+  .feature-badge {
+    font-size: 0.62rem;
+    padding: 0.25rem 0.45rem;
   }
 
   .feature-card h5 {
@@ -532,6 +540,14 @@ a.topbar-chip:focus {
   color: inherit;
 }
 
+.feature-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
 .feature-card .feature-icon {
   display: inline-flex;
   align-items: center;
@@ -540,7 +556,20 @@ a.topbar-chip:focus {
   height: 2.75rem;
   border-radius: var(--bs-border-radius);
   font-size: 1.25rem;
-  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.feature-badge {
+  flex-shrink: 1;
+  min-width: 0;
+  margin-top: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: right;
+  line-height: 1.2;
 }
 
 .feature-icon.icon-green {
@@ -561,6 +590,11 @@ a.topbar-chip:focus {
 .feature-icon.icon-indigo {
   background: #e1e2fb;
   color: #3730a3;
+}
+
+.feature-icon.icon-amber {
+  background: #fdecc8;
+  color: #92620a;
 }
 
 .feature-card h5 {
