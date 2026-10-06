@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light">
-  <title>Topsheet Maker — KGEC Pages</title>
+  <title>Topsheet Maker - KGEC Pages</title>
 
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -20,18 +20,215 @@
 
   <style>
 
-    /* ═══════════════════════════════════════════════════
-       PAGE LAYOUT
-       ═══════════════════════════════════════════════════ */
+    /* PAGE LAYOUT */
 
     body.page-topsheet {
       padding-bottom: 0;
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       STEP PILLS
-       ═══════════════════════════════════════════════════ */
+    /* ROLE CHOOSER */
+
+    .ts-role-card {
+      cursor: pointer;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .ts-role-card:hover,
+    .ts-role-card:focus-visible {
+      border-color: var(--bs-primary);
+      transform: translateY(-2px);
+    }
+
+    /* STUDENT PDF ANNOTATOR */
+
+    .st-pages {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .st-preview-col {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .st-hint {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .st-empty {
+      margin: auto;
+      max-width: 420px;
+      min-height: 40vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .st-empty-icon {
+      font-size: 3rem;
+      color: var(--bs-primary);
+    }
+
+    .st-howto {
+      display: inline-block;
+      padding-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .st-pages:empty {
+      display: none;
+    }
+
+    .st-page {
+      position: relative;
+      background: #fff;
+      box-shadow: var(--kg-shadow-md);
+      max-width: 100%;
+    }
+
+    .st-page canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .st-page.placing {
+      cursor: crosshair;
+    }
+
+    .st-item {
+      position: absolute;
+      outline: 1px dashed transparent;
+      touch-action: none;
+    }
+
+    .st-item:hover,
+    .st-item.selected {
+      outline-color: var(--bs-primary);
+    }
+
+    .st-item.selected {
+      z-index: 2;
+    }
+
+    .st-text {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1;
+      color: #000;
+      cursor: text;
+    }
+
+    .st-text .st-edit {
+      display: block;
+      white-space: pre;
+      min-width: 1ch;
+      outline: none;
+    }
+
+    .st-text.selected,
+    .st-text:hover {
+      outline-offset: 3px;
+    }
+
+    .st-grip {
+      position: absolute;
+      left: -3px;
+      bottom: 100%;
+      margin-bottom: 4px;
+      width: 22px;
+      height: 22px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: var(--bs-primary);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      font-family: sans-serif;
+      cursor: move;
+      touch-action: none;
+    }
+
+    .st-item:hover .st-grip,
+    .st-item.selected .st-grip {
+      display: flex;
+    }
+
+    .st-sig {
+      cursor: move;
+    }
+
+    .st-sig img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .st-resize {
+      position: absolute;
+      right: -6px;
+      bottom: -6px;
+      width: 12px;
+      height: 12px;
+      background: var(--bs-primary);
+      border: 1px solid #fff;
+      border-radius: 2px;
+      cursor: nwse-resize;
+      display: none;
+    }
+
+    .st-item.selected .st-resize {
+      display: block;
+    }
+
+    .st-sig-chip {
+      width: 96px;
+      padding: 4px;
+      position: relative;
+    }
+
+    .st-sig-chip.active {
+      border-color: var(--bs-primary);
+    }
+
+    .st-sig-chip img {
+      max-width: 100%;
+      max-height: 40px;
+      background: #fff;
+    }
+
+    .st-sig-del {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      padding: 0 4px;
+      line-height: 1.2;
+      font-size: .7rem;
+    }
+
+    .ts-role-icon {
+      font-size: 1.75rem;
+      color: var(--bs-primary);
+    }
+
+
+    /* STEP PILLS */
 
     .ts-step-bar {
       display: flex;
@@ -67,9 +264,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       IMAGE PREVIEWS IN SIDEBAR
-       ═══════════════════════════════════════════════════ */
+    /* IMAGE PREVIEWS IN SIDEBAR */
 
     .ts-img-prev {
       width: 100%;
@@ -92,9 +287,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       VALIDATION TABLE
-       ═══════════════════════════════════════════════════ */
+    /* VALIDATION TABLE */
 
     .ts-val-scroll {
       max-height: 230px;
@@ -102,18 +295,14 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       PROGRESS
-       ═══════════════════════════════════════════════════ */
+    /* PROGRESS */
 
     #pdf-progress {
       display: none;
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       A4 TOPSHEET DOCUMENT
-       ═══════════════════════════════════════════════════ */
+    /* A4 TOPSHEET DOCUMENT */
 
     .ts-doc {
       font-family: Arial, Helvetica, sans-serif;
@@ -136,9 +325,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       HEADER
-       ═══════════════════════════════════════════════════ */
+    /* HEADER */
 
     .ts-header {
       text-align: center;
@@ -172,10 +359,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       INFORMATION TABLE
-       SINGLE BORDER
-       ═══════════════════════════════════════════════════ */
+    /* INFORMATION TABLE - SINGLE BORDER */
 
     .ts-info-table {
       width: 100%;
@@ -224,9 +408,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       SECTION LABEL
-       ═══════════════════════════════════════════════════ */
+    /* SECTION LABEL */
 
     .ts-sec-lbl {
       font-size: 7pt;
@@ -237,12 +419,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       ASSESSMENT RUBRICS
-
-       DOUBLE OUTER BORDER
-       SINGLE INTERNAL GRID
-       ═══════════════════════════════════════════════════ */
+    /* ASSESSMENT RUBRICS - DOUBLE OUTER BORDER - SINGLE INTERNAL GRID */
 
     .ts-rubrics-table {
       width: 100%;
@@ -319,9 +496,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       RUBRIC CONTENT
-       ═══════════════════════════════════════════════════ */
+    /* RUBRIC CONTENT */
 
     .ts-rubric-content {
       display: block;
@@ -342,10 +517,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       MARKS TABULATION
-       SINGLE BORDER
-       ═══════════════════════════════════════════════════ */
+    /* MARKS TABULATION - SINGLE BORDER */
 
     .ts-marks-table {
       width: 100%;
@@ -409,9 +581,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       MARK CONTENT
-       ═══════════════════════════════════════════════════ */
+    /* MARK CONTENT */
 
     .ts-mark-content {
       display: block;
@@ -432,9 +602,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       MARKS ROW ACTIONS
-       ═══════════════════════════════════════════════════ */
+    /* MARKS ROW ACTIONS */
 
     .ts-mark-row-selected td {
       outline: 1px solid rgba(4,120,87,.35);
@@ -455,9 +623,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       FEEDBACK
-       ═══════════════════════════════════════════════════ */
+    /* FEEDBACK */
 
     .ts-feedback {
       font-size: 7pt;
@@ -492,9 +658,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       SIGNATURE SECTION
-       ═══════════════════════════════════════════════════ */
+    /* SIGNATURE SECTION */
 
     .ts-sigs {
       position: absolute;
@@ -596,9 +760,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       EDITING HIGHLIGHTS
-       ═══════════════════════════════════════════════════ */
+    /* EDITING HIGHLIGHTS */
 
     .ts-editable [contenteditable] {
       border-bottom: 1px dashed rgba(4,120,87,.3);
@@ -615,9 +777,7 @@
     }
 
 
-    /* ═══════════════════════════════════════════════════
-       PLACEHOLDER
-       ═══════════════════════════════════════════════════ */
+    /* PLACEHOLDER */
 
     .ts-ph {
       color: #c0c0c0;
@@ -634,12 +794,256 @@
   <div id="navbar-root"></div>
 
 
-  <div class="generator-layout">
+  <!-- ROLE CHOOSER -->
+
+  <main id="role-chooser" class="container py-5">
+
+    <div class="text-center mb-4">
+
+      <h1 class="h3 fw-bold">What do you want to do?</h1>
+
+      <p class="text-muted mb-0">Pick the option that fits you.</p>
+
+    </div>
 
 
-    <!-- ═══════════════════════════════════════════════
-         A4 PREVIEW PANE
-         ═══════════════════════════════════════════════ -->
+    <div class="row g-3 justify-content-center">
+
+      <div class="col-12 col-md-5 col-lg-4">
+
+        <button
+          type="button"
+          class="card ts-role-card w-100 text-start"
+          data-role="teacher"
+        >
+
+          <div class="card-body">
+
+            <i class="bi bi-person-workspace ts-role-icon"></i>
+
+            <h2 class="h5 mt-2">I'm a teacher</h2>
+
+            <p class="small text-muted mb-0">
+              Make a front page (topsheet) for your class.
+            </p>
+
+          </div>
+
+        </button>
+
+      </div>
+
+
+      <div class="col-12 col-md-5 col-lg-4">
+
+        <button
+          type="button"
+          class="card ts-role-card w-100 text-start"
+          data-role="student"
+        >
+
+          <div class="card-body">
+
+            <i class="bi bi-mortarboard ts-role-icon"></i>
+
+            <h2 class="h5 mt-2">I'm a student</h2>
+
+            <p class="small text-muted mb-0">
+              Fill the topsheet given by your teacher.
+            </p>
+
+          </div>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- STUDENT FLOW -->
+
+  <div
+    class="generator-layout"
+    id="flow-student"
+    style="display:none;"
+  >
+
+    <div class="generator-preview custom-scroll">
+
+      <div class="st-preview-col">
+
+        <div
+          id="st-hint"
+          class="alert alert-info py-2 px-3 small mb-0 st-hint"
+          role="status"
+          style="display:none;"
+        ></div>
+
+        <div id="st-empty" class="st-empty text-center">
+
+          <i class="bi bi-file-earmark-pdf st-empty-icon"></i>
+
+          <h1 class="h4 mt-2">Fill your topsheet</h1>
+
+          <p class="text-muted mb-0">
+            Upload the PDF your teacher gave you.
+          </p>
+
+        </div>
+
+        <div id="st-pages" class="st-pages"></div>
+
+      </div>
+
+    </div>
+
+
+    <div class="generator-sidebar custom-scroll">
+
+      <div class="d-flex flex-column gap-3">
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary w-100"
+          data-role-back
+        >
+          <i class="bi bi-arrow-left"></i>
+          Change role
+        </button>
+
+
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-file-earmark-pdf"></i>
+            Step 1: Upload the topsheet
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <input
+              type="file"
+              id="st-pdf"
+              class="form-control form-control-sm"
+              accept="application/pdf,.pdf"
+            >
+            <div id="st-pdf-stat" class="small text-muted"></div>
+          </div>
+        </div>
+
+
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-fonts"></i>
+            Step 2: Add your text
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <button
+              type="button"
+              id="st-add-text"
+              class="btn btn-outline-primary"
+              disabled
+            >
+              <i class="bi bi-plus-lg"></i>
+              Add text
+            </button>
+          </div>
+        </div>
+
+
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-pen"></i>
+            Step 3: Add your signature
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+
+            <div
+              id="st-sig-list"
+              class="d-flex flex-wrap gap-2"
+            ></div>
+
+            <div id="st-sig-empty" class="small text-muted">
+              No saved signatures yet.
+            </div>
+
+            <button
+              type="button"
+              id="st-new-sig"
+              class="btn btn-outline-primary"
+            >
+              <i class="bi bi-image"></i>
+              Extract signature from image
+            </button>
+
+          </div>
+        </div>
+
+
+        <div class="card" id="st-item-card" style="display:none;">
+          <div class="card-header">
+            <i class="bi bi-sliders"></i>
+            Selected item
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+
+            <div>
+              <label class="form-label small mb-1" id="st-size-label">Font size</label>
+              <div class="input-group">
+                <button type="button" class="btn btn-outline-secondary" id="st-smaller" aria-label="Smaller">
+                  <i class="bi bi-dash-lg"></i>
+                </button>
+                <output class="form-control text-center" id="st-size-value"></output>
+                <button type="button" class="btn btn-outline-secondary" id="st-larger" aria-label="Larger">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="button" id="st-delete" class="btn btn-outline-danger">
+              <i class="bi bi-trash"></i>
+              Remove
+            </button>
+
+          </div>
+        </div>
+
+
+        <div class="card cta-card">
+          <div class="card-header">
+            <i class="bi bi-download"></i>
+            Step 4: Download
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <button
+              type="button"
+              id="st-download"
+              class="btn btn-success btn-lg w-100"
+              disabled
+            >
+              <i class="bi bi-download"></i>
+              Download filled PDF
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- TEACHER FLOW -->
+
+  <div
+    class="generator-layout"
+    id="flow-teacher"
+    style="display:none;"
+  >
+
+
+    <!-- A4 PREVIEW PANE -->
 
     <div class="generator-preview custom-scroll">
 
@@ -653,9 +1057,7 @@
           >
 
 
-            <!-- ═══════════════════════════════════════
-                 HEADER
-                 ═══════════════════════════════════════ -->
+            <!-- HEADER -->
 
             <div class="ts-header">
 
@@ -704,9 +1106,7 @@
             </div>
 
 
-            <!-- ═══════════════════════════════════════
-                 INFORMATION TABLE
-                 ═══════════════════════════════════════ -->
+            <!-- INFORMATION TABLE -->
 
             <table class="ts-info-table">
 
@@ -821,7 +1221,7 @@
                     Name of the Student:&nbsp;
 
                     <span class="ts-sf ts-student-name ts-ph">
-                      — student name —
+                      student name
                     </span>
 
                   </td>
@@ -832,7 +1232,7 @@
                     Roll Number:&nbsp;
 
                     <span class="ts-sf ts-student-roll ts-ph">
-                      —
+                      -
                     </span>
 
                   </td>
@@ -912,9 +1312,7 @@
             </table>
 
 
-            <!-- ═══════════════════════════════════════
-                 ASSESSMENT RUBRICS
-                 ═══════════════════════════════════════ -->
+            <!-- ASSESSMENT RUBRICS -->
 
             <p class="ts-sec-lbl">
               Assessment Rubrics:
@@ -934,15 +1332,15 @@
                   </th>
 
                   <th>
-                    (1) Excellent (80–100%)
+                    (1) Excellent (80-100%)
                   </th>
 
                   <th>
-                    (2) Good (60–79%)
+                    (2) Good (60-79%)
                   </th>
 
                   <th>
-                    (3) Satisfactory (40–59%)
+                    (3) Satisfactory (40-59%)
                   </th>
 
                   <th>
@@ -961,9 +1359,7 @@
             </table>
 
 
-            <!-- ═══════════════════════════════════════
-                 MARKS TABULATION
-                 ═══════════════════════════════════════ -->
+            <!-- MARKS TABULATION -->
 
             <p class="ts-sec-lbl">
               Marks Tabulation:
@@ -1012,9 +1408,7 @@
             </table>
 
 
-            <!-- ═══════════════════════════════════════
-                 EXAMINER FEEDBACK
-                 ═══════════════════════════════════════ -->
+            <!-- EXAMINER FEEDBACK -->
 
             <div class="ts-feedback">
 
@@ -1070,9 +1464,7 @@
             </div>
 
 
-            <!-- ═══════════════════════════════════════
-                 SIGNATURES
-                 ═══════════════════════════════════════ -->
+            <!-- SIGNATURES -->
 
             <div class="ts-sigs">
 
@@ -1173,9 +1565,7 @@
     </div>
 
 
-    <!-- ═══════════════════════════════════════════════
-         SIDEBAR
-         ═══════════════════════════════════════════════ -->
+    <!-- SIDEBAR -->
 
     <div class="generator-sidebar custom-scroll">
 
@@ -1190,7 +1580,7 @@
             class="ts-step-pill active"
             id="pill-s1"
           >
-            <i class="bi bi-1-circle-fill"></i>
+            <i class="bi bi-1-circle"></i>
             Common Fields
           </div>
 
@@ -1206,11 +1596,18 @@
         </div>
 
 
-        <!-- ═══════════════════════════════════════════
-             STEP 1
-             ═══════════════════════════════════════════ -->
+        <!-- STEP 1 -->
 
         <div id="sidebar-s1">
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary w-100 mb-3"
+            data-role-back
+          >
+            <i class="bi bi-arrow-left"></i>
+            Change role
+          </button>
 
 
           <div
@@ -1218,7 +1615,7 @@
             role="alert"
           >
 
-            <i class="bi bi-pencil-fill"></i>
+            <i class="bi bi-pencil"></i>
 
             Click any text on the A4 preview to edit it directly.
 
@@ -1231,7 +1628,7 @@
 
             <div class="card-header">
 
-              <i class="bi bi-pen-fill"></i>
+              <i class="bi bi-pen"></i>
 
               Teacher / Examiner Signature
 
@@ -1278,7 +1675,7 @@
 
             <div class="card-header">
 
-              <i class="bi bi-shield-fill-check"></i>
+              <i class="bi bi-shield-check"></i>
 
               College Seal
 
@@ -1352,7 +1749,7 @@
                 class="btn btn-outline-danger"
               >
 
-                <i class="bi bi-trash3-fill"></i>
+                <i class="bi bi-trash3"></i>
 
                 Remove This Entire Row
 
@@ -1407,7 +1804,7 @@
                 class="btn btn-primary btn-lg w-100"
               >
 
-                <i class="bi bi-arrow-right-circle-fill"></i>
+                <i class="bi bi-arrow-right-circle"></i>
 
                 Complete All Common Fields
 
@@ -1420,9 +1817,7 @@
         </div>
 
 
-        <!-- ═══════════════════════════════════════════
-             STEP 2
-             ═══════════════════════════════════════════ -->
+        <!-- STEP 2 -->
 
         <div
           id="sidebar-s2"
@@ -1608,7 +2003,7 @@
 
             <div class="card-header">
 
-              <i class="bi bi-eye-fill"></i>
+              <i class="bi bi-eye"></i>
 
               Preview Student
 
@@ -1647,7 +2042,7 @@
                 >
 
                   <span id="prog-label">
-                    Processing…
+                    Processing...
                   </span>
 
                   <span id="prog-pct">
@@ -1695,7 +2090,7 @@
                 disabled
               >
 
-                <i class="bi bi-file-earmark-pdf-fill"></i>
+                <i class="bi bi-file-earmark-pdf"></i>
 
                 Export All as PDF
 
@@ -1710,7 +2105,7 @@
                 disabled
               >
 
-                <i class="bi bi-file-zip-fill"></i>
+                <i class="bi bi-file-zip"></i>
 
                 Export All as PDFs (ZIP)
 
@@ -1730,9 +2125,7 @@
   </div>
 
 
-  <!-- ═══════════════════════════════════════════════
-       JAVASCRIPT LIBRARIES
-       ═══════════════════════════════════════════════ -->
+  <!-- JAVASCRIPT LIBRARIES -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
@@ -1756,6 +2149,16 @@
 
   <script
     src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+  ></script>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"
+  ></script>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"
   ></script>
 
 
