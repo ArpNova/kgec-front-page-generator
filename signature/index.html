@@ -19,11 +19,16 @@
       <a href="../index.html" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
     </div>
 
-    <p class="text-muted">Pick a photo or scan of a signature. The ink is extracted with a transparent background, and you choose the crop and the ink colour. Everything runs in your browser.</p>
+    <p class="text-muted">Pick a photo or scan of a signature. The ink is extracted with a transparent background, and you choose the crop and the ink colour(s). Everything runs in your browser.</p>
 
-    <button id="btn-choose" class="btn btn-primary mb-4"><i class="bi bi-pen"></i> Choose signature</button>
+    <div class="card mb-4">
+      <div class="card-body" id="flow"></div>
+    </div>
 
-    <div id="results" class="row g-3"></div>
+    <div id="results-section" class="d-none">
+      <h2 class="h5 mb-3">Result</h2>
+      <div id="results" class="row g-3"></div>
+    </div>
   </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

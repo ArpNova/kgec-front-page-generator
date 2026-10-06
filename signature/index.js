@@ -1,8 +1,8 @@
 import { renderNavbar } from "../lib/navbar.js";
 import { preloadSignatureEngine } from "../lib/signature-extract.js";
-import { openSignaturePicker } from "../lib/signature-picker.js";
+import { mountSignatureFlow } from "../lib/signature-picker.js";
 
-renderNavbar("../");
+renderNavbar("../", "signature");
 
 const resultsEl = document.getElementById("results");
 
@@ -21,10 +21,13 @@ function renderResult({ key, label, dataUrl }) {
   return col;
 }
 
-document.getElementById("btn-choose").addEventListener("click", async () => {
-  const selected = await openSignaturePicker({ title: "Extract signature" });
-  if (!selected) return;
-  resultsEl.replaceChildren(...selected.map(renderResult));
+const flow = mountSignatureFlow(document.getElementById("flow"), {
+  doneLabel: "Get signature",
+  onDone: (selected) => {
+    resultsEl.replaceChildren(...selected.map(renderResult));
+    document.getElementById("results-section").classList.remove("d-none");
+    flow.reset();
+  },
 });
 
 // Download OpenCV (~8 MB) in the background so the popup is ready sooner.

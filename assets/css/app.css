@@ -268,6 +268,60 @@ a.topbar-chip:focus {
   background: var(--kg-hover);
 }
 
+/* "More" menu: a dropup wrapper that sizes like the other nav items. */
+.bottom-nav-more {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.bottom-nav-more > .bottom-nav-link {
+  flex: 1 1 auto;
+}
+
+.bottom-nav-menu {
+  --bs-dropdown-padding-x: 0.4rem;
+  --bs-dropdown-padding-y: 0.4rem;
+  --bs-dropdown-border-radius: 1.25rem;
+  --bs-dropdown-inner-border-radius: 0.85rem;
+  --bs-dropdown-link-hover-bg: var(--kg-hover);
+  --bs-dropdown-link-active-bg: var(--kg-hover);
+  --bs-dropdown-link-active-color: var(--bs-primary);
+  min-width: 11rem;
+  margin-bottom: 0.6rem !important;
+  border-color: var(--kg-border);
+  box-shadow: 0 2px 8px rgba(10, 55, 60, 0.12);
+}
+
+/* Items reuse the nav-link look: muted text, primary + tinted pill on hover. */
+.bottom-nav-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  color: var(--kg-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bottom-nav-menu .dropdown-item i {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.bottom-nav-menu .dropdown-item:hover,
+.bottom-nav-menu .dropdown-item:focus-visible,
+.bottom-nav-menu .dropdown-item.active {
+  color: var(--bs-primary);
+  background: var(--kg-hover);
+}
+
+.bottom-nav-menu li + li {
+  margin-top: 0.15rem;
+}
+
 @media (max-width: 400px) {
   .bottom-nav-inner {
     height: 3.1rem;
