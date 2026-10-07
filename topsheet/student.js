@@ -7,7 +7,9 @@
 import { showToast } from "../lib/ui.js";
 import { preloadSignatureEngine } from "../lib/signature-extract.js";
 import { openSignaturePicker } from "../lib/signature-picker.js";
-import { listSavedSignatures, saveSignature, removeSavedSignature } from "../lib/saved-signatures.js";
+import { listSavedSignatures, listUnlinkedSignatures, saveSignature, removeSavedSignature } from "../lib/saved-signatures.js";
+import { loadUsers, USER_FIELDS } from "../lib/users.js";
+import { linkBadge, populateStudentSelect } from "../lib/student-link.js";
 
 const PDFJS_WORKER = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
@@ -38,8 +40,12 @@ const st = {
 
   selectedId: null,
 
-  /** What the next click on a page will place. */
+  /** What the next click on a page will place:
+   *  {kind:'text', text?, field?} or {kind:'sig', sig}. */
   pending: null,
+
+  /** Saved student whose details and signatures are offered ("" = none). */
+  studentId: "",
 
   /** Signatures made this session but not saved on the device. */
   sessionSigs: [],
@@ -84,18 +90,22 @@ function setPending(pending) {
 
   st.pages.forEach((p) => p.el.classList.toggle("placing", !!pending));
 
-  $("st-add-text").classList.toggle("active", pending?.kind === "text");
+  $("st-add-text").classList.toggle("active", pending?.kind === "text" && !pending.field);
 
   const hint = $("st-hint");
 
   if (pending) {
-    hint.textContent =
-      pending.kind === "text" ? "Click on the page to place the text." : "Click on the page to place the signature.";
+    hint.textContent = pending.field
+      ? `Click on the page to place the ${pending.field.toLowerCase()}.`
+      : pending.kind === "text"
+        ? "Click on the page to place the text."
+        : "Click on the page to place the signature.";
   }
 
   hint.style.display = pending ? "" : "none";
 
   renderSigList();
+  renderStudentFields();
 }
 
 // Selection + sidebar controls
@@ -167,14 +177,14 @@ function positionItem(item) {
   item.el.style.top = `${item.y * 100}%`;
 }
 
-function addTextItem(pageIdx, x, y) {
+function addTextItem(pageIdx, x, y, text = "Text") {
   const item = {
     id: `i${st.nextId++}`,
     page: pageIdx,
     kind: "text",
     x: clamp(x, 0, 0.95),
     y: clamp(y, 0, 0.98),
-    text: "Text",
+    text,
     fontSize: DEFAULT_FONT_SIZE,
   };
 
@@ -355,7 +365,7 @@ function onPageClick(e, pageIdx) {
   setPending(null);
 
   if (pending.kind === "text") {
-    addTextItem(pageIdx, x, y);
+    addTextItem(pageIdx, x, y, pending.text);
   } else {
     addSigItem(pageIdx, x, y, pending.sig);
   }
@@ -479,7 +489,13 @@ async function loadPdf(file) {
 // Signature list
 
 function allSignatures() {
-  const saved = listSavedSignatures();
+  const users = loadUsers();
+  const unlinked = new Set(listUnlinkedSignatures(users).map((s) => s.id));
+
+  // With a student chosen, offer their signatures plus the unlinked ones.
+  const saved = listSavedSignatures().filter(
+    (s) => !st.studentId || s.userId === st.studentId || unlinked.has(s.id)
+  );
 
   const extra = st.sessionSigs.filter((s) => !saved.some((x) => x.dataUrl === s.dataUrl));
 
@@ -490,8 +506,14 @@ function renderSigList() {
   const list = $("st-sig-list");
 
   const sigs = allSignatures();
+  const users = loadUsers();
 
   $("st-sig-empty").style.display = sigs.length ? "none" : "";
+
+  const student = users.find((u) => u.id === st.studentId);
+  $("st-sig-scope").textContent = student
+    ? `Showing ${student.name || "this student"}'s signatures and unlinked ones.`
+    : "Showing all saved signatures.";
 
   list.replaceChildren(
     ...sigs.map((sig) => {
@@ -511,7 +533,10 @@ function renderSigList() {
 
       btn.querySelector("img").src = sig.dataUrl;
 
-      btn.querySelector("div").textContent = sig.saved ? sig.label : `${sig.label} (not saved)`;
+      const caption = btn.querySelector("div");
+
+      caption.textContent = sig.saved ? sig.label : `${sig.label} (not saved)`;
+      caption.appendChild(linkBadge(sig.userId, users));
 
       btn.addEventListener("click", () => {
         if (!st.pages.length) {
@@ -528,7 +553,7 @@ function renderSigList() {
         const del = document.createElement("button");
 
         del.type = "button";
-        del.className = "btn btn-sm btn-danger st-sig-del";
+        del.className = "btn btn-danger sig-del";
         del.title = "Remove from this device";
         del.innerHTML = '<i class="bi bi-x"></i>';
 
@@ -546,26 +571,79 @@ function renderSigList() {
   );
 }
 
+// Student details
+
+function renderStudentFields() {
+  const box = $("st-student-fields");
+  const user = loadUsers().find((u) => u.id === st.studentId);
+
+  const fields = user ? USER_FIELDS.filter((f) => (user[f.key] || "").trim()) : [];
+
+  box.replaceChildren(
+    ...fields.map((f) => {
+      const value = user[f.key].trim();
+      const btn = document.createElement("button");
+
+      btn.type = "button";
+      btn.className =
+        "btn btn-sm btn-outline-secondary text-start" + (st.pending?.field === f.label ? " active" : "");
+      btn.title = `Click, then click the page to place ${f.label.toLowerCase()}`;
+
+      const label = document.createElement("span");
+      label.className = "text-muted";
+      label.textContent = `${f.label}: `;
+
+      btn.append(label, value);
+
+      btn.addEventListener("click", () => {
+        if (!st.pages.length) {
+          showToast("Upload the PDF first.", "warning");
+          return;
+        }
+
+        setPending(st.pending?.field === f.label ? null : { kind: "text", text: value, field: f.label });
+      });
+
+      return btn;
+    })
+  );
+}
+
+function refreshStudents() {
+  const select = $("st-student");
+  st.studentId = "";
+
+  const users = populateStudentSelect(select, { unlinkedLabel: "Choose a student..." });
+
+  $("st-student-none").classList.toggle("d-none", users.length > 0);
+  select.disabled = users.length === 0;
+
+  st.studentId = select.value;
+  renderStudentFields();
+  renderSigList();
+}
+
 async function makeSignature() {
   const picked = await openSignaturePicker({
     title: "Extract signature from image",
     allowAsIs: true,
-    offerSave: true,
+    offerSave: true, // shows the "link to a student" choice; saving is automatic
   });
 
   if (!picked?.variants.length) return;
 
+  // Every variant (both inks) is stored and linked to the same student.
   let failed = false;
 
   picked.variants.forEach((v) => {
-    if (picked.save && saveSignature({ label: v.label, dataUrl: v.dataUrl })) return;
-    if (picked.save) failed = true;
-    st.sessionSigs.push({ id: `tmp-${st.nextId++}`, label: v.label, dataUrl: v.dataUrl });
+    if (saveSignature({ label: v.label, dataUrl: v.dataUrl, userId: picked.userId })) return;
+    failed = true;
+    st.sessionSigs.push({ id: `tmp-${st.nextId++}`, label: v.label, dataUrl: v.dataUrl, userId: picked.userId });
   });
 
   if (failed) {
     showToast("Could not save on this device (storage full or blocked). Available for this session only.", "warning");
-  } else if (picked.save) {
+  } else {
     showToast("Saved on this device.", "success");
   }
 
@@ -691,6 +769,7 @@ let initialised = false;
 export function activateStudentFlow() {
   if (initialised) {
     layoutPages();
+    refreshStudents(); // saved students may have changed in Settings
     return;
   }
 
@@ -716,6 +795,13 @@ export function activateStudentFlow() {
   });
 
   $("st-new-sig").addEventListener("click", makeSignature);
+
+  $("st-student").addEventListener("change", (e) => {
+    st.studentId = e.target.value;
+    if (st.pending?.field) setPending(null);
+    renderStudentFields();
+    renderSigList();
+  });
 
   $("st-smaller").addEventListener("click", () => resizeSelected(-1));
   $("st-larger").addEventListener("click", () => resizeSelected(1));
@@ -745,5 +831,5 @@ export function activateStudentFlow() {
 
   window.addEventListener("resize", layoutPages);
 
-  renderSigList();
+  refreshStudents();
 }

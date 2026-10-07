@@ -26,6 +26,12 @@
       padding-bottom: 0;
     }
 
+    /* Below the desktop breakpoint the sidebar is stacked under the preview;
+       keep its last card clear of the floating bottom nav. */
+    #flow-student .generator-sidebar {
+      padding-bottom: calc(var(--kg-bottombar-h) + 1rem);
+    }
+
 
     /* ROLE CHOOSER */
 
@@ -207,19 +213,23 @@
       border-color: var(--bs-primary);
     }
 
+    .st-sig-chip .badge {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .st-sig-chip .small {
+      overflow: hidden;
+      min-width: 0;
+    }
+
     .st-sig-chip img {
       max-width: 100%;
       max-height: 40px;
       background: #fff;
-    }
-
-    .st-sig-del {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      padding: 0 4px;
-      line-height: 1.2;
-      font-size: .7rem;
     }
 
     .ts-role-icon {
@@ -935,9 +945,19 @@
         <div class="card">
           <div class="card-header">
             <i class="bi bi-fonts"></i>
-            Step 2: Add your text
+            Step 2: Add your details
           </div>
           <div class="card-body d-flex flex-column gap-2">
+            <div>
+              <label class="form-label small mb-1" for="st-student">Fill from a saved student</label>
+              <select id="st-student" class="form-select form-select-sm"></select>
+              <div id="st-student-none" class="form-text d-none">
+                No saved students yet. Add one in
+                <a href="../settings/index.html">Settings</a>, or type your details as free text below.
+              </div>
+            </div>
+            <div id="st-student-fields" class="d-flex flex-wrap gap-2 pe-2"></div>
+            <div class="small text-muted">Or type anything you like:</div>
             <button
               type="button"
               id="st-add-text"
@@ -945,7 +965,7 @@
               disabled
             >
               <i class="bi bi-plus-lg"></i>
-              Add text
+              Add free text
             </button>
           </div>
         </div>
@@ -957,10 +977,11 @@
             Step 3: Add your signature
           </div>
           <div class="card-body d-flex flex-column gap-2">
+            <div id="st-sig-scope" class="small text-muted"></div>
 
             <div
               id="st-sig-list"
-              class="d-flex flex-wrap gap-2"
+              class="d-flex flex-wrap gap-3 pt-2 pe-2"
             ></div>
 
             <div id="st-sig-empty" class="small text-muted">
@@ -973,7 +994,7 @@
               class="btn btn-outline-primary"
             >
               <i class="bi bi-image"></i>
-              Extract signature from image
+              Use a new signature (from an image)
             </button>
 
           </div>

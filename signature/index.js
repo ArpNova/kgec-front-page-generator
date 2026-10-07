@@ -2,6 +2,7 @@ import { renderNavbar } from "../lib/navbar.js";
 import { preloadSignatureEngine } from "../lib/signature-extract.js";
 import { mountSignatureFlow } from "../lib/signature-picker.js";
 import { saveSignature } from "../lib/saved-signatures.js";
+import { linkBadge } from "../lib/student-link.js";
 import { showToast } from "../lib/ui.js";
 
 renderNavbar("../", "signature");
@@ -17,27 +18,29 @@ function renderResult({ key, label, dataUrl }) {
       <img alt="${label}" style="max-width:100%;max-height:140px;">
     </div>
     <a class="btn btn-success btn-sm" download="signature-${key}.png"><i class="bi bi-download"></i> Download</a>
-    <button type="button" class="btn btn-outline-primary btn-sm" data-save><i class="bi bi-phone"></i> Save on this device</button>
-    <div class="small text-muted mt-1">Recommended: saved signatures can be reused in the topsheet student flow.</div>
   `;
   col.querySelector("img").src = dataUrl;
   col.querySelector("a").href = dataUrl;
-  const saveBtn = col.querySelector("[data-save]");
-  saveBtn.addEventListener("click", () => {
-    if (saveSignature({ label, dataUrl })) {
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Saved';
-    } else {
-      showToast("Could not save on this device (storage full or blocked).", "warning");
-    }
-  });
   return col;
 }
 
 const flow = mountSignatureFlow(document.getElementById("flow"), {
   doneLabel: "Get signature",
-  onDone: (selected) => {
-    resultsEl.replaceChildren(...selected.map(renderResult));
+  offerSave: true, // shows the "link to a student" choice; saving is automatic
+  onDone: (variants, { userId }) => {
+    // Both ink colours are stored and linked to the same student.
+    const failed = variants.some((v) => !saveSignature({ label: v.label, dataUrl: v.dataUrl, userId }));
+    if (failed) {
+      showToast("Could not save on this device (storage full or blocked).", "warning");
+    }
+
+    const status = document.getElementById("save-status");
+    status.replaceChildren();
+    if (!failed) {
+      status.append("Saved on this device: ", linkBadge(userId));
+    }
+
+    resultsEl.replaceChildren(...variants.map(renderResult));
     document.getElementById("results-section").classList.remove("d-none");
     flow.reset();
   },
