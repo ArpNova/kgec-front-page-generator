@@ -1105,3 +1105,44 @@ a.topbar-chip:focus {
   line-height: 1;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+/* Signature adjustment panel: big, easy-to-grab controls */
+.sig-adjust {
+  background: #fff;
+}
+.sig-adjust .form-range {
+  height: 2.25rem;
+  touch-action: pan-y;
+}
+.sig-adjust .form-range::-webkit-slider-runnable-track {
+  height: 0.5rem;
+}
+.sig-adjust .form-range::-moz-range-track {
+  height: 0.5rem;
+}
+.sig-adjust .form-range::-webkit-slider-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.5rem;
+}
+.sig-adjust .form-range::-moz-range-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.sig-adjust .form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-left: 0;
+  min-height: 2.25rem;
+}
+.sig-adjust .form-check-input {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  float: none;
+}
+.sig-adjust .form-check-label {
+  cursor: pointer;
+}
