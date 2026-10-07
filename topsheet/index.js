@@ -9,209 +9,33 @@ import { showToast } from "../lib/ui.js";
 import { extractMainSignature as processImage } from "../lib/signature-extract.js";
 import { activateStudentFlow } from "./student.js";
 
-// Default rubric content
+// Default sheet content (texts, text formats, page settings, rubrics and
+// marks rows) lives in data/topsheet_default_layout.json, like the front
+// page's default layout. state.layout is the working copy of that model.
 
-const DEFAULT_RUBRICS = [
-  {
-    letter: "A",
-    criteria: "Conceptual Understanding",
-    c1: "Complete accuracy, deep insight - (Editable as per subject)",
-    c2: "Mostly correct, minor gaps - (Editable as per subject)",
-    c3: "Basic understanding - (Editable as per subject)",
-    c4: "Poor understanding - (Editable as per subject)",
-  },
+async function loadTopsheetLayout(pathToJson = "../data/topsheet_default_layout.json") {
+  const res = await fetch(pathToJson);
 
-  {
-    letter: "B",
-    criteria: "Application / Problem Solving",
-    c1: "Accurate and logical application - (Editable as per subject)",
-    c2: "Minor errors in application - (Editable as per subject)",
-    c3: "Limited application ability - (Editable as per subject)",
-    c4: "Incorrect approach - (Editable as per subject)",
-  },
+  if (!res.ok) {
+    throw new Error(`Failed to load topsheet_default_layout.json: ${res.status}`);
+  }
 
-  {
-    letter: "C",
-    criteria: "Presentation & Clarity",
-    c1: "Well-structured, clear steps - (Editable as per subject)",
-    c2: "Mostly clear - (Editable as per subject)",
-    c3: "Some lack of clarity - (Editable as per subject)",
-    c4: "Poor presentation - (Editable as per subject)",
-  },
-
-  {
-    letter: "D",
-    criteria: "Analytical Ability",
-    c1: "Strong reasoning and justification - (Editable as per subject)",
-    c2: "Adequate reasoning - (Editable as per subject)",
-    c3: "Limited reasoning - (Editable as per subject)",
-    c4: "No logical justification - (Editable as per subject)",
-  },
-];
-
-const DEFAULT_MARK_ROWS = [
-  {
-    qno: "1.a)",
-    allotted: "1",
-    awarded: "",
-    co: "CO1",
-    bloom: "I - Understand",
-    remarks: "",
-  },
-
-  {
-    qno: "1.b)",
-    allotted: "1",
-    awarded: "",
-    co: "CO3",
-    bloom: "I - Recall",
-    remarks: "",
-  },
-
-  {
-    qno: "1.c)",
-    allotted: "1",
-    awarded: "",
-    co: "CO2",
-    bloom: "I - Remember",
-    remarks: "",
-  },
-
-  {
-    qno: "1.d)",
-    allotted: "1",
-    awarded: "",
-    co: "CO1",
-    bloom: "I - Recall",
-    remarks: "",
-  },
-
-  {
-    qno: "1.e)",
-    allotted: "1",
-    awarded: "",
-    co: "CO1",
-    bloom: "II - Understand",
-    remarks: "",
-  },
-
-  {
-    qno: "1.f)",
-    allotted: "1",
-    awarded: "",
-    co: "CO1",
-    bloom: "I - Memorize",
-    remarks: "",
-  },
-
-  {
-    qno: "1.g)",
-    allotted: "1",
-    awarded: "",
-    co: "CO3",
-    bloom: "I - Memorize",
-    remarks: "",
-  },
-
-  {
-    qno: "2",
-    allotted: "5",
-    awarded: "",
-    co: "CO1,CO3",
-    bloom: "VI - Discuss",
-    remarks: "",
-  },
-
-  {
-    qno: "3",
-    allotted: "5",
-    awarded: "",
-    co: "CO2",
-    bloom: "VI - Describe",
-    remarks: "",
-  },
-
-  {
-    qno: "4",
-    allotted: "5",
-    awarded: "",
-    co: "CO2",
-    bloom: "V - Explain",
-    remarks: "",
-  },
-
-  {
-    qno: "5",
-    allotted: "5",
-    awarded: "",
-    co: "CO2",
-    bloom: "I - Define",
-    remarks: "",
-  },
-
-  {
-    qno: "6",
-    allotted: "5",
-    awarded: "",
-    co: "CO2",
-    bloom: "V - Explain",
-    remarks: "",
-  },
-
-  {
-    qno: "7",
-    allotted: "5",
-    awarded: "",
-    co: "CO3",
-    bloom: "V - Explain",
-    remarks: "",
-  },
-];
+  return res.json();
+}
 
 // Application state
 
 const state = {
   step: 1,
 
+  /** Working copy of data/topsheet_default_layout.json */
+  layout: null,
+
   common: {
-    examinationTitle:
-      "Maulana Abul Kalam Azad University of Technology, West Bengal Top Sheet for CA1 Marks Submission",
+    // Text fields are filled from layout.texts by applyLayout().
+    rubrics: [],
 
-    examinationSubtitle: "(Written Test as a part of Continuous Assessment)",
-
-    collegeCode: "102",
-
-    collegeName: "Kalyani Government Engineering College",
-
-    programme: "Enter programme",
-
-    subject: "Enter Subject",
-
-    semester: "Enter year / semester",
-
-    courseCode: "Enter Paper Code",
-
-    upid: "Enter UPID",
-
-    examDate: "Enter Date of Examination",
-
-    teacherName: "Enter Teacher's name",
-
-    teacherPhone: "Enter Mobile number",
-
-    fullMarks: "Enter Full Marks",
-
-    duration: "Enter Duration",
-
-    feedbackStrengths: "",
-
-    feedbackImprovements: "",
-
-    feedbackCorrective: "",
-
-    rubrics: DEFAULT_RUBRICS.map((r) => ({ ...r })),
-
-    markRows: DEFAULT_MARK_ROWS.map((r) => ({ ...r })),
+    markRows: [],
 
     processedTeacherSig: null,
 
@@ -231,6 +55,30 @@ const state = {
 
 // Currently active marks-table row in Step 1.
 let selectedMarkRow = null;
+
+// The A4 sheet lives in its own page (./topsheet/topsheet.html) inside an
+// iframe, like the front page generator. Every sheet element is looked up
+// in that document.
+
+function sheetDoc() {
+  return document.getElementById("ts-frame").contentDocument;
+}
+
+function waitForSheet() {
+  const frame = document.getElementById("ts-frame");
+
+  return new Promise((resolve) => {
+    const ready = () => frame.contentDocument?.readyState === "complete" && frame.contentDocument.getElementById("ts-preview");
+
+    if (ready()) {
+      resolve();
+
+      return;
+    }
+
+    frame.addEventListener("load", () => resolve(), { once: true });
+  });
+}
 
 // Utility helpers
 
@@ -292,7 +140,7 @@ function hideProgress() {
 // Render rubrics
 
 function renderRubrics() {
-  const tbody = document.getElementById("ts-rubrics-body");
+  const tbody = sheetDoc().getElementById("ts-rubrics-body");
 
   if (!tbody) return;
 
@@ -303,7 +151,16 @@ function renderRubrics() {
       <tr>
 
         <td class="ts-rb-letter">
-          ${escHtml(row.letter)}
+
+          <span
+            class="ts-rubric-content"
+            data-rb="${ri}"
+            data-rb-col="letter"
+            contenteditable="true"
+            spellcheck="false"
+            style="${recordToCss(row.fmt?.letter)}"
+          >${escHtml(row.letter)}</span>
+
         </td>
 
 
@@ -315,6 +172,7 @@ function renderRubrics() {
             data-rb-col="criteria"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.criteria)}"
           >${escHtml(row.criteria)}</span>
 
         </td>
@@ -332,6 +190,7 @@ function renderRubrics() {
                 data-rb-col="${col}"
                 contenteditable="true"
                 spellcheck="false"
+                style="${recordToCss(row.fmt?.[col])}"
               >${escHtml(row[col])}</span>
 
             </td>
@@ -366,7 +225,7 @@ function renderRubrics() {
 // Render marks rows
 
 function renderMarkRows() {
-  const tbody = document.getElementById("ts-marks-body");
+  const tbody = sheetDoc().getElementById("ts-marks-body");
 
   if (!tbody) return;
 
@@ -390,6 +249,7 @@ function renderMarkRows() {
             data-mk-col="qno"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.qno)}"
           >${escHtml(row.qno)}</span>
 
         </td>
@@ -405,6 +265,7 @@ function renderMarkRows() {
             data-mk-col="allotted"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.allotted)}"
           >${escHtml(row.allotted)}</span>
 
         </td>
@@ -420,6 +281,7 @@ function renderMarkRows() {
             data-mk-col="awarded"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.awarded)}"
           >${escHtml(row.awarded || "")}</span>
 
         </td>
@@ -435,6 +297,7 @@ function renderMarkRows() {
             data-mk-col="co"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.co)}"
           >${escHtml(row.co)}</span>
 
         </td>
@@ -450,6 +313,7 @@ function renderMarkRows() {
             data-mk-col="bloom"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.bloom)}"
           >${escHtml(row.bloom)}</span>
 
         </td>
@@ -465,6 +329,7 @@ function renderMarkRows() {
             data-mk-col="remarks"
             contenteditable="true"
             spellcheck="false"
+            style="${recordToCss(row.fmt?.remarks)}"
           >${escHtml(row.remarks || "")}</span>
 
         </td>
@@ -511,6 +376,9 @@ function renderMarkRows() {
     });
   });
 
+  // A re-render replaces the cells, so drop a format target that no longer exists.
+  if (fmtEl && !fmtEl.isConnected) clearFormatSelection();
+
   updateMarkRowActionUI();
 }
 
@@ -524,7 +392,7 @@ function selectMarkRow(index) {
   selectedMarkRow = index;
 
   // Highlight the selected row.
-  document.querySelectorAll("#ts-marks-body tr[data-mark-row]").forEach((row) => {
+  sheetDoc().querySelectorAll("#ts-marks-body tr[data-mark-row]").forEach((row) => {
     const rowIndex = parseInt(row.dataset.markRow, 10);
 
     row.classList.toggle("ts-mark-row-selected", rowIndex === selectedMarkRow);
@@ -587,6 +455,8 @@ function createBlankMarkRow() {
     bloom: "",
 
     remarks: "",
+
+    fmt: {},
   };
 }
 
@@ -663,7 +533,7 @@ function addMarkRowBelow() {
 
 function focusNewMarkRow(index) {
   requestAnimationFrame(() => {
-    const el = document.querySelector(`#ts-marks-body tr[data-mark-row="${index}"] [data-mk-col="qno"]`);
+    const el = sheetDoc().querySelector(`#ts-marks-body tr[data-mark-row="${index}"] [data-mk-col="qno"]`);
 
     if (!el) {
       return;
@@ -674,13 +544,13 @@ function focusNewMarkRow(index) {
     /*
       Put caret at the beginning of the new row.
     */
-    const range = document.createRange();
+    const range = sheetDoc().createRange();
 
     range.selectNodeContents(el);
 
     range.collapse(true);
 
-    const selection = window.getSelection();
+    const selection = sheetDoc().defaultView.getSelection();
 
     if (selection) {
       selection.removeAllRanges();
@@ -703,7 +573,9 @@ function preventNewlines(el) {
 // Bind inline editing
 
 function bindInlineEditing() {
-  const preview = document.getElementById("ts-preview");
+  const preview = sheetDoc().getElementById("ts-preview");
+
+  preview.querySelectorAll("[data-label]").forEach(preventNewlines);
 
   preview.querySelectorAll("[data-field]").forEach((el) => {
     preventNewlines(el);
@@ -717,7 +589,7 @@ function bindInlineEditing() {
 // Sync DOM to state
 
 function syncCommonFromDOM() {
-  const preview = document.getElementById("ts-preview");
+  const preview = sheetDoc().getElementById("ts-preview");
 
   // Common fields.
   preview.querySelectorAll("[data-field]").forEach((el) => {
@@ -756,7 +628,7 @@ function refreshCommonImages() {
 }
 
 function setImgEl(selector, dataURL) {
-  document.querySelectorAll(selector).forEach((img) => {
+  sheetDoc().querySelectorAll(selector).forEach((img) => {
     if (dataURL) {
       img.src = dataURL;
 
@@ -810,6 +682,235 @@ async function handleImageUpload(file, { stateKey, previewId, statusId, transpar
   }
 }
 
+// Apply the layout model to the sheet
+
+function applyLayout(layout) {
+  const doc = sheetDoc().getElementById("ts-preview");
+
+  const page = layout.page || {};
+
+  const margin = page.margin || {};
+
+  doc.style.fontSize = `${page.fontSize}pt`;
+
+  doc.style.setProperty("--ts-m-top", `${margin.top}mm`);
+
+  doc.style.setProperty("--ts-m-right", `${margin.right}mm`);
+
+  doc.style.setProperty("--ts-m-bottom", `${margin.bottom}mm`);
+
+  doc.style.setProperty("--ts-m-left", `${margin.left}mm`);
+
+  doc.style.setProperty("--ts-sig-h", `${page.signatureHeight}mm`);
+
+  doc.querySelectorAll("[data-key]").forEach((el) => {
+    const rec = layout.texts[el.dataset.key];
+
+    if (!rec) return;
+
+    if (rec.text !== undefined) {
+      el.textContent = rec.text;
+    }
+
+    if (el.dataset.field && rec.text !== undefined) {
+      state.common[el.dataset.field] = rec.text;
+    }
+
+    applyRecordStyle(el, rec);
+  });
+
+  state.common.rubrics = layout.rubrics;
+
+  state.common.markRows = layout.markRows;
+}
+
+// Text formatting (bold / italic / underline / size)
+
+/*
+  The format applies to the whole editable element that was last
+  clicked on the sheet. Formatting is written as inline style on that
+  element. Table cells are re-rendered from state, so their style
+  string is also kept on the row (row.fmt[col]).
+*/
+
+let fmtEl = null;
+
+function readFormat(el) {
+  const cs = el.ownerDocument.defaultView.getComputedStyle(el);
+
+  return {
+    bold: parseInt(cs.fontWeight, 10) >= 600,
+
+    italic: cs.fontStyle === "italic",
+
+    underline: cs.textDecorationLine.includes("underline"),
+
+    sizePt: Math.round(parseFloat(cs.fontSize) * 0.75 * 10) / 10,
+  };
+}
+
+function updateFormatUI() {
+  const card = document.getElementById("card-text-format");
+
+  if (!card) return;
+
+  if (!fmtEl) {
+    card.style.display = "none";
+
+    return;
+  }
+
+  card.style.display = "";
+
+  const f = readFormat(fmtEl);
+
+  document.getElementById("fmt-bold").classList.toggle("active", f.bold);
+
+  document.getElementById("fmt-italic").classList.toggle("active", f.italic);
+
+  document.getElementById("fmt-underline").classList.toggle("active", f.underline);
+
+  document.getElementById("fmt-size").value = f.sizePt;
+
+  const text = fmtEl.textContent.trim();
+
+  document.getElementById("fmt-target").textContent = text ? `Editing: ${text}` : "Editing: (empty text)";
+}
+
+function selectFormatEl(el) {
+  if (fmtEl && fmtEl !== el) {
+    fmtEl.classList.remove("ts-fmt-selected");
+  }
+
+  fmtEl = el;
+
+  fmtEl.classList.add("ts-fmt-selected");
+
+  updateFormatUI();
+}
+
+function clearFormatSelection() {
+  if (fmtEl) {
+    fmtEl.classList.remove("ts-fmt-selected");
+  }
+
+  fmtEl = null;
+
+  updateFormatUI();
+}
+
+// Format record of an editable element inside the layout model:
+// { fontSize, bold, italic, underline }. Table cells keep it on their row
+// (row.fmt[col]); every other text keeps it in layout.texts[key].
+function formatRecord(el) {
+  const cells = [
+    ["rb", "rbCol", state.common.rubrics],
+
+    ["mk", "mkCol", state.common.markRows],
+  ];
+
+  for (const [attr, colAttr, rows] of cells) {
+    if (el.dataset[attr] === undefined) continue;
+
+    const row = rows[parseInt(el.dataset[attr], 10)];
+
+    if (!row) return null;
+
+    row.fmt = row.fmt || {};
+
+    row.fmt[el.dataset[colAttr]] = row.fmt[el.dataset[colAttr]] || {};
+
+    return row.fmt[el.dataset[colAttr]];
+  }
+
+  const key = el.dataset.key;
+
+  if (!key) return null;
+
+  state.layout.texts[key] = state.layout.texts[key] || {};
+
+  return state.layout.texts[key];
+}
+
+function recordToCss(rec = {}) {
+  const css = [];
+
+  if (rec.fontSize != null) css.push(`font-size:${rec.fontSize}pt`);
+
+  if (rec.bold != null) css.push(`font-weight:${rec.bold ? 700 : 400}`);
+
+  if (rec.italic != null) css.push(`font-style:${rec.italic ? "italic" : "normal"}`);
+
+  if (rec.underline != null) css.push(`text-decoration:${rec.underline ? "underline" : "none"}`);
+
+  return css.join(";");
+}
+
+function applyRecordStyle(el, rec) {
+  el.style.cssText = recordToCss(rec);
+}
+
+function applyFormat(change) {
+  if (!fmtEl) return;
+
+  const rec = formatRecord(fmtEl);
+
+  if (!rec) return;
+
+  change(rec, readFormat(fmtEl));
+
+  applyRecordStyle(fmtEl, rec);
+
+  updateFormatUI();
+}
+
+function bindFormatting() {
+  sheetDoc().addEventListener("focusin", (e) => {
+    const el = e.target.closest?.('[contenteditable="true"]');
+
+    if (el) selectFormatEl(el);
+  });
+
+  document.getElementById("fmt-bold").addEventListener("click", () => {
+    applyFormat((rec, f) => {
+      rec.bold = !f.bold;
+    });
+  });
+
+  document.getElementById("fmt-italic").addEventListener("click", () => {
+    applyFormat((rec, f) => {
+      rec.italic = !f.italic;
+    });
+  });
+
+  document.getElementById("fmt-underline").addEventListener("click", () => {
+    applyFormat((rec, f) => {
+      rec.underline = !f.underline;
+    });
+  });
+
+  document.getElementById("fmt-size").addEventListener("input", (e) => {
+    const size = parseFloat(e.target.value);
+
+    if (!(size >= 4 && size <= 30)) return;
+
+    applyFormat((rec) => {
+      rec.fontSize = size;
+    });
+  });
+
+  // Keep the text in the layout model in step with what is typed.
+  sheetDoc().addEventListener("input", (e) => {
+    const el = e.target.closest?.("[data-label], [data-field]");
+
+    if (!el?.dataset.key) return;
+
+    const rec = formatRecord(el);
+
+    if (rec) rec.text = el.textContent;
+  });
+}
+
 // Step 1 to Step 2
 
 function goToStep2() {
@@ -855,25 +956,23 @@ function goToStep2() {
 
   state.step = 2;
 
+  clearFormatSelection();
+
   document.getElementById("sidebar-s1").style.display = "none";
 
   document.getElementById("sidebar-s2").style.display = "";
 
-  document.getElementById("pill-s1").classList.replace("active", "done");
-
-  document.getElementById("pill-s2").classList.add("active");
-
   /*
     Lock Step 1 fields.
   */
-  document
+  sheetDoc()
     .getElementById("ts-preview")
     .querySelectorAll("[contenteditable]")
     .forEach((el) => {
       el.removeAttribute("contenteditable");
     });
 
-  document.getElementById("ts-preview").classList.remove("ts-editable");
+  sheetDoc().getElementById("ts-preview").classList.remove("ts-editable");
 
   /*
     The marks action panel belongs
@@ -894,11 +993,7 @@ function goToStep1() {
 
   document.getElementById("sidebar-s1").style.display = "";
 
-  document.getElementById("pill-s2").classList.remove("active");
-
-  document.getElementById("pill-s1").classList.replace("done", "active");
-
-  const preview = document.getElementById("ts-preview");
+  const preview = sheetDoc().getElementById("ts-preview");
 
   preview.classList.add("ts-editable");
 
@@ -908,7 +1003,7 @@ function goToStep1() {
 // Restore preview from state
 
 function restorePreviewFromState() {
-  const preview = document.getElementById("ts-preview");
+  const preview = sheetDoc().getElementById("ts-preview");
 
   preview.querySelectorAll("[data-field]").forEach((el) => {
     const f = el.dataset.field;
@@ -926,6 +1021,12 @@ function restorePreviewFromState() {
     el.addEventListener("input", () => {
       state.common[f] = el.textContent;
     });
+  });
+
+  preview.querySelectorAll("[data-label]").forEach((el) => {
+    el.setAttribute("contenteditable", "true");
+
+    el.setAttribute("spellcheck", "false");
   });
 
   renderRubrics();
@@ -1207,9 +1308,9 @@ function previewStudent(idx) {
     return;
   }
 
-  const nameEl = document.querySelector(".ts-student-name");
+  const nameEl = sheetDoc().querySelector(".ts-student-name");
 
-  const rollEl = document.querySelector(".ts-student-roll");
+  const rollEl = sheetDoc().querySelector(".ts-student-roll");
 
   if (nameEl) {
     nameEl.textContent = s.name;
@@ -1223,7 +1324,7 @@ function previewStudent(idx) {
     rollEl.classList.remove("ts-ph");
   }
 
-  const sigImg = document.querySelector(".ts-student-sig");
+  const sigImg = sheetDoc().querySelector(".ts-student-sig");
 
   if (sigImg) {
     if (s.processedSig) {
@@ -1315,485 +1416,66 @@ async function generateAllTopsheets() {
   showToast(`${students.length} topsheets ready! Click "Export All as PDF" or "PDFs (ZIP)".`, "success");
 }
 
-// Build static topsheet HTML for PDF
-
-function buildTopsheetHTML(common, student) {
-  const rubricRows = common.rubrics
-    .map(
-      (r) => `
-
-          <tr>
-
-            <td class="ts-rb-letter">
-              ${escHtml(r.letter)}
-            </td>
-
-            <td class="ts-rb-criteria">
-              <span class="ts-rubric-content">
-                ${escHtml(r.criteria)}
-              </span>
-            </td>
-
-            <td>
-              <span class="ts-rubric-content">
-                ${escHtml(r.c1)}
-              </span>
-            </td>
-
-            <td>
-              <span class="ts-rubric-content">
-                ${escHtml(r.c2)}
-              </span>
-            </td>
-
-            <td>
-              <span class="ts-rubric-content">
-                ${escHtml(r.c3)}
-              </span>
-            </td>
-
-            <td>
-              <span class="ts-rubric-content">
-                ${escHtml(r.c4)}
-              </span>
-            </td>
-
-          </tr>
-
-        `
-    )
-    .join("");
-
-  /*
-    Use the actual editable marks-row state.
-    Added / deleted / edited rows therefore
-    appear in exported PDFs as well.
-  */
-  const markRows = common.markRows
-    .map(
-      (r) => `
-
-          <tr>
-
-            <td class="ts-qno">
-              <span class="ts-mark-content">
-                ${escHtml(r.qno)}
-              </span>
-            </td>
-
-            <td class="ts-allotted">
-              <span class="ts-mark-content">
-                ${escHtml(r.allotted)}
-              </span>
-            </td>
-
-            <td class="ts-awarded">
-              <span class="ts-mark-content">
-                ${escHtml(r.awarded || "")}
-              </span>
-            </td>
-
-            <td class="ts-co">
-              <span class="ts-mark-content">
-                ${escHtml(r.co)}
-              </span>
-            </td>
-
-            <td class="ts-bloom">
-              <span class="ts-mark-content">
-                ${escHtml(r.bloom)}
-              </span>
-            </td>
-
-            <td class="ts-remarks">
-              <span class="ts-mark-content">
-                ${escHtml(r.remarks || "")}
-              </span>
-            </td>
-
-          </tr>
-
-        `
-    )
-    .join("");
-
-  const studentSig = student?.processedSig
-    ? `
-        <img
-          class="ts-sig-img ts-student-sig"
-          src="${student.processedSig}"
-          alt=""
-          style="display:block;"
-        >
-      `
-    : "";
+// Build one student's topsheet for PDF export.
+// The live sheet is cloned, so every edit and text format made in Step 1
+// carries over; only the student-specific parts are filled in.
 
-  const teacherSig = common.processedTeacherSig
-    ? `
-        <img
-          class="ts-sig-img ts-teacher-sig"
-          src="${common.processedTeacherSig}"
-          alt=""
-          style="display:block;"
-        >
-      `
-    : "";
+function buildTopsheetEl(student) {
+  const doc = sheetDoc().getElementById("ts-preview").cloneNode(true);
 
-  const collegeSeal = common.processedCollegeSeal
-    ? `
-        <img
-          class="ts-seal-img ts-college-seal"
-          src="${common.processedCollegeSeal}"
-          alt=""
-          style="display:block;"
-        >
-      `
-    : "";
+  doc.removeAttribute("id");
 
-  return `
+  doc.classList.remove("ts-editable");
 
-    <div
-      class="ts-doc"
-      style="
-        width:794px;
-        height:1123px;
-        min-height:0;
-        box-sizing:border-box;
-      "
-    >
+  doc.querySelectorAll("[contenteditable]").forEach((el) => el.removeAttribute("contenteditable"));
 
+  doc.querySelectorAll(".ts-fmt-selected").forEach((el) => el.classList.remove("ts-fmt-selected"));
 
-      <!-- HEADER -->
+  doc.querySelectorAll(".ts-mark-row-selected").forEach((el) => el.classList.remove("ts-mark-row-selected"));
 
-      <div class="ts-header">
+  doc.style.width = "794px";
 
-        <div class="ts-title-line">
-          ${escHtml(common.examinationTitle)}
-        </div>
+  doc.style.height = "1123px";
 
-        <div class="ts-subtitle-line">
-          ${escHtml(common.examinationSubtitle)}
-        </div>
+  doc.style.minHeight = "0";
 
-        <div class="ts-college-line">
-          College Code &amp; No:&nbsp;
-          ${escHtml(common.collegeCode)},
-          &nbsp;
-          ${escHtml(common.collegeName)}
-        </div>
+  doc.style.boxSizing = "border-box";
 
-      </div>
+  const nameEl = doc.querySelector(".ts-student-name");
 
+  const rollEl = doc.querySelector(".ts-student-roll");
 
-      <!-- INFORMATION TABLE -->
+  nameEl.textContent = student?.name ?? "";
 
-      <table class="ts-info-table">
+  rollEl.textContent = String(student?.roll ?? "");
 
-        <tbody>
+  nameEl.classList.remove("ts-ph");
 
-          <tr>
+  rollEl.classList.remove("ts-ph");
 
-            <td>
-              Programme:&nbsp;
-              ${escHtml(common.programme)}
-            </td>
+  const sigImg = doc.querySelector(".ts-student-sig");
 
-            <td>
-              Year/Semester:&nbsp;
-              ${escHtml(common.semester)}
-            </td>
+  if (student?.processedSig) {
+    sigImg.src = student.processedSig;
 
-          </tr>
+    sigImg.style.display = "block";
+  } else {
+    sigImg.removeAttribute("src");
 
+    sigImg.style.display = "none";
+  }
 
-          <tr>
-
-            <td>
-              Subject (course):&nbsp;
-              ${escHtml(common.subject)}
-            </td>
-
-            <td>
-              Paper (course) Code:&nbsp;
-              ${escHtml(common.courseCode)}
-            </td>
-
-          </tr>
-
-
-          <tr>
-
-            <td>
-              UPID:&nbsp;
-              ${escHtml(common.upid)}
-            </td>
-
-            <td>
-              Date of Examination:&nbsp;
-              ${escHtml(common.examDate)}
-            </td>
-
-          </tr>
-
-
-          <tr>
-
-            <td>
-              Name of the Student:&nbsp;
-              ${escHtml(student?.name ?? "")}
-            </td>
-
-            <td>
-              Roll Number:&nbsp;
-              ${escHtml(String(student?.roll ?? ""))}
-            </td>
-
-          </tr>
-
-
-          <tr>
-
-            <td>
-              Subject Teacher:&nbsp;
-              ${escHtml(common.teacherName)}
-            </td>
-
-            <td>
-              Mobile Number:&nbsp;
-              ${escHtml(common.teacherPhone)}
-            </td>
-
-          </tr>
-
-
-          <tr>
-
-            <td>
-              Full Marks:&nbsp;
-              ${escHtml(common.fullMarks)}
-            </td>
-
-            <td>
-              Duration:&nbsp;
-              ${escHtml(common.duration)}
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
-
-
-      <!-- ASSESSMENT RUBRICS -->
-
-      <p class="ts-sec-lbl">
-        Assessment Rubrics:
-      </p>
-
-
-      <table class="ts-rubrics-table">
-
-        <thead>
-
-          <tr>
-
-            <th class="ts-rb-letter"></th>
-
-            <th class="ts-rb-criteria">
-              Criteria
-            </th>
-
-            <th>
-              (1) Excellent (80-100%)
-            </th>
-
-            <th>
-              (2) Good (60-79%)
-            </th>
-
-            <th>
-              (3) Satisfactory (40-59%)
-            </th>
-
-            <th>
-              (4) Needs Improvement (&lt;40%)
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-        <tbody>
-
-          ${rubricRows}
-
-        </tbody>
-
-      </table>
-
-
-      <!-- MARKS TABULATION -->
-
-      <p class="ts-sec-lbl">
-        Marks Tabulation:
-      </p>
-
-
-      <table class="ts-marks-table">
-
-        <thead>
-
-          <tr>
-
-            <th class="ts-qno">
-              Q. No.
-            </th>
-
-            <th class="ts-allotted">
-              Marks Allotted
-            </th>
-
-            <th class="ts-awarded">
-              Marks Awarded
-            </th>
-
-            <th class="ts-co">
-              Course Outcome
-            </th>
-
-            <th class="ts-bloom">
-              Bloom's Level
-            </th>
-
-            <th class="ts-remarks">
-              Remarks
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-        <tbody>
-
-          ${markRows}
-
-        </tbody>
-
-      </table>
-
-
-      <!-- FEEDBACK -->
-
-      <div class="ts-feedback">
-
-        <span class="ts-fb-lbl">
-          Examiner's Feedback:
-        </span>
-
-        <br>
-
-        <span class="ts-fb-line">
-          Strengths of the Student:&nbsp;
-          ${escHtml(common.feedbackStrengths)}
-        </span>
-
-        <br>
-
-        <span class="ts-fb-line">
-          Areas for Improvement:&nbsp;
-          ${escHtml(common.feedbackImprovements)}
-        </span>
-
-        <br>
-
-        <span class="ts-fb-line">
-          Suggested Corrective Measures:&nbsp;
-          ${escHtml(common.feedbackCorrective)}
-        </span>
-
-      </div>
-
-
-      <!-- SIGNATURES -->
-
-      <div class="ts-sigs">
-
-
-        <!-- EXAMINER -->
-
-        <div
-          class="ts-sigs-row"
-          style="margin-bottom: 6mm;"
-        >
-
-          <div class="ts-sig-left">
-
-            <p class="ts-review-text">
-              I have reviewed my evaluated answer script and understood the marks and feedback awarded.
-            </p>
-
-          </div>
-
-
-          <div class="ts-sig-right">
-
-            <div class="ts-sig-img-area">
-
-              ${teacherSig}
-
-            </div>
-
-            <p class="ts-sig-lbl">
-              Signature of the Examiner with date
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <!-- STUDENT / SEAL -->
-
-        <div class="ts-sigs-row">
-
-          <div class="ts-sig-left">
-
-            <div class="ts-sig-img-area">
-
-              ${studentSig}
-
-            </div>
-
-            <p class="ts-sig-lbl">
-              Signature of the student with date
-            </p>
-
-          </div>
-
-
-          <div class="ts-sig-right">
-
-            ${collegeSeal}
-
-          </div>
-
-        </div>
-
-
-      </div>
-
-
-    </div>
-
-  `;
+  return doc;
 }
 
 // Wait for all images
 
 async function waitForImages(container) {
+  // Make sure the web font is loaded before html2canvas captures the sheet.
+  await document.fonts.load('7pt "Roboto Condensed"');
+
+  await document.fonts.load('bold 7pt "Roboto Condensed"');
+
   const imgs = [...container.querySelectorAll("img")].filter((img) => img.src);
 
   await Promise.all(
@@ -1878,7 +1560,7 @@ async function exportAllAsPDF() {
 
       setProgress(`Exporting page ${i + 1} / ${students.length}...`, pct);
 
-      wrap.innerHTML = buildTopsheetHTML(state.common, s);
+      wrap.replaceChildren(buildTopsheetEl(s));
 
       await waitForImages(wrap);
 
@@ -2010,7 +1692,7 @@ async function exportAllAsZIP() {
 
       setProgress(`Exporting PDF ${i + 1} / ${students.length}...`, pct);
 
-      wrap.innerHTML = buildTopsheetHTML(state.common, s);
+      wrap.replaceChildren(buildTopsheetEl(s));
 
       await waitForImages(wrap);
 
@@ -2315,10 +1997,26 @@ function bindRoleChooser() {
 
 // Init
 
-function init() {
+async function init() {
   renderNavbar("../", "topsheet");
 
   bindRoleChooser();
+
+  await waitForSheet();
+
+  try {
+    state.layout = await loadTopsheetLayout();
+  } catch (err) {
+    console.error(err);
+
+    showToast("Could not load the default topsheet layout.", "danger");
+
+    return;
+  }
+
+  state.layout.texts = state.layout.texts || {};
+
+  applyLayout(state.layout);
 
   /*
     Normalize all marks rows so even
@@ -2337,7 +2035,11 @@ function init() {
     bloom: row.bloom || "",
 
     remarks: row.remarks || "",
+
+    fmt: row.fmt || {},
   }));
+
+  state.layout.markRows = state.common.markRows;
 
   renderRubrics();
 
@@ -2346,6 +2048,8 @@ function init() {
   bindInlineEditing();
 
   bindSidebarEvents();
+
+  bindFormatting();
 }
 
 init();
